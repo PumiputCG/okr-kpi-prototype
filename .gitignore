@@ -1,0 +1,39 @@
+
+# ===== Portfolio publish rules (added for GitHub) =====
+# Dependencies
+/vendor/
+/node_modules/
+# Secrets — never publish
+.env
+.env.*
+!.env.example
+conn.php
+*.pem
+*.key
+# Database dumps & real data
+*.sql
+*.sqlite
+*.sqlite3
+# Runtime / uploads / generated
+/storage/app/
+/storage/framework/
+/storage/logs/
+/public/storage
+/public/storage_old
+/uploads/
+/tmp/
+/qa-output/
+# Editor & OS noise
+.DS_Store
+Thumbs.db
+*.log
+# Local backup snapshots
+*.bak
+*.bak-*
+*.orig
+# AI tooling folders
+/.claude/
+/.agents/
+/.codex/
+
+# project-specific

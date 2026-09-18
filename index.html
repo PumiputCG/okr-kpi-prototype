@@ -1,0 +1,1900 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OKR-KPI System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy:    #831843;   /* ชมพูเข้ม (rose-900) — header/text */
+      --blue:    #db2777;   /* ชมพูกลาง (pink-600) — primary action */
+      --gold:    #f472b6;   /* ชมพูอ่อน-สว่าง (pink-400) — accent */
+      --white:   #ffffff;
+      --bg:      #fdf2f8;   /* พื้นหลังชมพูอ่อนมาก (pink-50) */
+      --green:   #16a34a;
+      --green-bg:#dcfce7;
+      --red:     #dc2626;
+      --red-bg:  #fee2e2;
+      --amber:   #ec4899;   /* ชมพูสว่าง (pink-500) */
+      --amber-bg:#fce7f3;   /* ชมพูอ่อน (pink-100) */
+      --text:    #1f1f2e;
+      --muted:   #64748b;
+      --radius:  12px;
+      --shadow:  0 4px 24px rgba(131,24,67,0.12);
+      --ease:    0.7s cubic-bezier(0.22,1,0.36,1);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Sarabun', sans-serif;
+      font-size: 16px;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* Progress bar */
+    #progress-bar {
+      position: fixed; top: 0; left: 0;
+      height: 4px; width: 0%;
+      background: linear-gradient(90deg, var(--blue), var(--gold));
+      z-index: 9999;
+      transition: width 0.1s linear;
+    }
+
+    /* Navbar — pink theme */
+    nav#navbar {
+      position: fixed; top: 4px; left: 0; right: 0;
+      height: 64px;
+      background: rgba(255,255,255,0.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(131,24,67,0.12);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px;
+      z-index: 1000;
+      box-shadow: 0 2px 16px rgba(131,24,67,0.08);
+    }
+    nav#navbar .brand {
+      font-weight: 700; font-size: 1.15rem;
+      background: linear-gradient(135deg, var(--navy), var(--blue));
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent; color: transparent;
+      padding: 0 18px 0 0;
+      border-right: 1px solid rgba(131,24,67,0.18);
+      white-space: nowrap; flex-shrink: 0;
+      letter-spacing: 0.02em;
+    }
+    nav#navbar .nav-links {
+      display: flex; align-items: center;
+      gap: 4px; flex: 1; justify-content: center;
+    }
+    nav#navbar a {
+      text-decoration: none; color: var(--muted);
+      font-size: 0.85rem; font-weight: 600;
+      padding: 7px 14px; border-radius: 999px;
+      transition: color 0.25s, background 0.25s, box-shadow 0.25s;
+      white-space: nowrap;
+    }
+    nav#navbar a:hover { color: var(--navy); background: var(--amber-bg); }
+    nav#navbar a.active {
+      color: var(--white);
+      background: linear-gradient(135deg, var(--blue), var(--amber));
+      box-shadow: 0 4px 12px rgba(219,39,119,0.28);
+    }
+    .lang-btn {
+      flex-shrink: 0; padding: 6px 18px;
+      border-radius: 999px;
+      border: 1.5px solid var(--blue);
+      background: transparent; color: var(--blue);
+      font-size: 0.82rem; font-weight: 700; cursor: pointer;
+      font-family: 'Sarabun', sans-serif;
+      transition: background 0.25s, color 0.25s, box-shadow 0.25s;
+      letter-spacing: 0.05em; margin-left: 14px;
+    }
+    .lang-btn:hover {
+      background: linear-gradient(135deg, var(--blue), var(--amber));
+      border-color: transparent;
+      color: var(--white);
+      box-shadow: 0 4px 12px rgba(219,39,119,0.28);
+    }
+
+    /* Section base */
+    section { padding: 90px 0 80px; position: relative; }
+    section:nth-child(even) { background: var(--white); }
+    section:nth-child(odd)  { background: var(--bg); }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+    .section-label {
+      display: inline-block; font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.15em;
+      color: var(--blue); background: rgba(219,39,119,0.08);
+      padding: 4px 12px; border-radius: 20px; margin-bottom: 14px;
+    }
+    h2.section-title {
+      font-size: 2rem; font-weight: 700; color: var(--navy);
+      margin-bottom: 48px; position: relative; padding-bottom: 16px;
+    }
+    h2.section-title::after {
+      content: ''; position: absolute; bottom: 0; left: 0;
+      width: 56px; height: 4px;
+      background: linear-gradient(90deg, var(--blue), var(--gold));
+      border-radius: 2px;
+    }
+
+    /* Reveal animations */
+    .reveal {
+      opacity: 0; transform: translateY(40px);
+      transition: opacity var(--ease), transform var(--ease);
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-left {
+      opacity: 0; transform: translateX(-40px);
+      transition: opacity var(--ease), transform var(--ease);
+    }
+    .reveal-left.visible { opacity: 1; transform: translateX(0); }
+    .reveal-scale {
+      opacity: 0; transform: scale(0.88) translateY(24px);
+      transition: opacity var(--ease), transform var(--ease);
+    }
+    .reveal-scale.visible { opacity: 1; transform: scale(1) translateY(0); }
+
+    /* ── SECTION 1: Hero ── */
+    #hero {
+      min-height: 100vh; display: flex; align-items: center;
+      justify-content: center; text-align: center;
+      background: linear-gradient(160deg, #fdf2f8 0%, var(--bg) 60%, #fff0f8 100%);
+      padding: 0;
+    }
+    .hero-inner { max-width: 780px; padding: 0 32px; }
+    h1.hero-title {
+      font-size: clamp(2.8rem, 6vw, 5rem); font-weight: 700; color: var(--navy);
+      line-height: 1.1; margin-bottom: 20px; letter-spacing: -0.02em;
+    }
+    h1.hero-title span { color: var(--blue); }
+    .hero-subtitle { font-size: 1.25rem; color: var(--muted); margin-bottom: 52px; }
+    .scroll-arrow {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 4px; color: var(--muted); font-size: 0.78rem;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      animation: bounce 2s infinite;
+    }
+    .scroll-arrow svg { width: 22px; height: 22px; }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(10px); }
+    }
+
+    /* ── SECTION 2: Agenda Table ── */
+    .agenda-table-wrap {
+      overflow: hidden; border-radius: var(--radius);
+      box-shadow: var(--shadow); border: 1px solid rgba(131,24,67,0.10);
+      max-width: 960px;
+    }
+    .agenda-table { width: 100%; border-collapse: collapse; }
+    .agenda-table thead tr {
+      background: linear-gradient(90deg, var(--navy), #9d174d);
+    }
+    .agenda-table thead th {
+      padding: 16px 24px; text-align: left; color: #fff;
+      font-weight: 700; font-size: 0.82rem;
+      letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .agenda-table thead th:first-child { width: 72px; text-align: center; }
+    .agenda-table thead th:nth-child(2) { width: 240px; }
+    .agenda-table tbody tr {
+      border-bottom: 1px solid rgba(131,24,67,0.07);
+      opacity: 0;
+      animation: rowIn 0.55s cubic-bezier(0.22,1,0.36,1) forwards;
+      animation-play-state: paused;
+    }
+    .agenda-table-wrap.visible .agenda-table tbody tr {
+      animation-play-state: running;
+    }
+    .agenda-table tbody tr:nth-child(1)  { animation-delay: 0.08s; }
+    .agenda-table tbody tr:nth-child(2)  { animation-delay: 0.18s; }
+    .agenda-table tbody tr:nth-child(3)  { animation-delay: 0.28s; }
+    .agenda-table tbody tr:nth-child(4)  { animation-delay: 0.38s; }
+    .agenda-table tbody tr:nth-child(5)  { animation-delay: 0.48s; }
+    .agenda-table tbody tr:nth-child(6)  { animation-delay: 0.58s; }
+    .agenda-table tbody tr:nth-child(7)  { animation-delay: 0.68s; }
+    .agenda-table tbody tr:nth-child(8)  { animation-delay: 0.78s; }
+    @keyframes rowIn {
+      from { opacity: 0; transform: translateX(-18px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .agenda-table tbody tr:last-child { border-bottom: none; }
+    .agenda-table tbody tr:nth-child(odd) td  { background: var(--white); }
+    .agenda-table tbody tr:nth-child(even) td { background: var(--bg); }
+    .agenda-table tbody tr:hover td { background: rgba(219,39,119,0.04); }
+    .agenda-table td { padding: 16px 24px; vertical-align: middle; }
+    .agenda-table td.num-cell {
+      text-align: center; border-right: 1px solid rgba(131,24,67,0.07);
+    }
+    .agenda-num-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--blue), #ec4899);
+      border-radius: 50%; font-size: 0.85rem; font-weight: 700; color: #fff;
+    }
+    .agenda-table td.text-cell {
+      font-size: 0.95rem; color: var(--text); line-height: 1.6;
+    }
+    .agenda-table td.topic-cell {
+      font-size: 0.98rem; font-weight: 700; color: var(--navy);
+      vertical-align: middle; border-right: 1px solid rgba(131,24,67,0.07);
+      background: var(--white);
+    }
+
+    /* ── SECTION 3: Hierarchy Diagram ── */
+    #overview .container {
+      max-width: 1304px;
+    }
+    .overview-text {
+      font-size: 1.05rem; color: var(--muted); max-width: 720px;
+      margin-bottom: 56px; line-height: 1.85;
+    }
+    .hier-diagram {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: space-between; width: 100%; max-width: 1240px;
+      margin: 0 auto;
+    }
+    .hier-group {
+      display: grid; grid-template-columns: 120px minmax(0, 900px) 220px; align-items: center;
+      column-gap: 0; width: 100%; min-height: 82px;
+    }
+    .hier-tag {
+      font-size: 0.86rem; font-weight: 700; text-transform: none;
+      letter-spacing: 0; color: var(--muted);
+      background: transparent; border: 0;
+      padding: 0 16px 0 0; border-radius: 0; margin-bottom: 0;
+      text-align: right; white-space: nowrap;
+    }
+    .hier-row {
+      grid-column: 2;
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px; flex-wrap: wrap;
+    }
+    .hier-box {
+      padding: 17px 44px; border-radius: 10px;
+      font-weight: 700; font-size: 1.05rem; text-align: center;
+      box-shadow: 0 4px 16px rgba(131,24,67,0.12); white-space: nowrap;
+    }
+    .hb-l1 {
+      background: linear-gradient(135deg, var(--navy), #9d174d); color: #fff;
+      font-size: 1.2rem; padding: 20px 96px;
+      box-shadow: 0 6px 24px rgba(131,24,67,0.22);
+    }
+    .hb-l2 {
+      background: linear-gradient(135deg, var(--blue), #ec4899); color: #fff;
+      padding: 17px 54px;
+    }
+    .hb-l3 {
+      background: linear-gradient(135deg, #f472b6, #f9a8d4); color: var(--navy);
+    }
+    .hb-l4 {
+      background: linear-gradient(135deg, #fbcfe8, #fce7f3); color: var(--navy);
+      font-size: 0.96rem; padding: 14px 25px;
+    }
+    .hier-sep { font-size: 1.4rem; color: var(--muted); font-weight: 300; }
+    .hier-conn {
+      display: grid; grid-template-columns: 120px minmax(0, 900px) 220px; justify-items: center;
+      column-gap: 0; width: 100%; margin: 4px 0;
+    }
+    .hier-conn-line,
+    .hier-conn-arrow {
+      grid-column: 2;
+    }
+    .hier-conn-line {
+      width: 2px; height: 34px;
+      background: linear-gradient(180deg, rgba(219,39,119,0.6), rgba(219,39,119,0.2));
+    }
+    .hier-conn-arrow {
+      width: 0; height: 0;
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-top: 9px solid rgba(219,39,119,0.4);
+    }
+    /* description column in workflow diagram */
+    .pyr-desc {
+      flex-shrink: 0; width: 220px;
+      padding-left: 24px;
+      border-left: 3px solid rgba(219,39,119,0.15);
+      font-size: 0.87rem; color: var(--muted); line-height: 1.65;
+      display: flex; align-items: center;
+      opacity: 0; transform: translateY(28px);
+      transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1) 0.12s,
+                  transform 0.6s cubic-bezier(0.22,1,0.36,1) 0.12s;
+    }
+    /* desc slides in right after its sibling flow-item turns visible */
+    .flow-item.visible ~ .pyr-desc {
+      opacity: 1; transform: translateY(0);
+    }
+    .pyr-desc strong {
+      display: block; font-weight: 700; color: var(--navy);
+      margin-bottom: 4px; font-size: 0.88rem;
+    }
+
+    /* ── SECTION 4: Workflow (sticky scroll pyramid) ── */
+    #workflow { padding: 0; background: var(--white); }
+    .workflow-header { padding: 90px 0 40px; }
+    .workflow-subtitle {
+      font-size: 1.05rem; color: var(--muted);
+      font-style: italic;
+      margin-top: 16px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+    .workflow-sticky-outer {
+      height: calc(3.2 * 100vh);
+      position: relative;
+    }
+    .workflow-sticky-inner {
+      position: sticky; top: 64px;
+      min-height: calc(100vh - 64px);
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 28px 0;
+    }
+    /* Pyramid diagram */
+    .pyr-diagram {
+      display: flex; flex-direction: column;
+      margin: 0 auto; padding: 0 32px;
+      gap: 6px;
+    }
+    .pyr-row-wrap {
+      display: flex; align-items: center;
+    }
+    .pyr-level-lbl {
+      width: 120px; flex-shrink: 0;
+      font-size: 0.85rem; font-weight: 700; color: var(--muted);
+      text-align: right; padding-right: 16px; white-space: nowrap;
+    }
+    /* content area fixed at 900px so SVG x-positions are exact */
+    .flow-item {
+      width: 900px; flex-shrink: 0;
+      opacity: 0; transform: translateY(28px);
+      transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1),
+                  transform 0.6s cubic-bezier(0.22,1,0.36,1);
+    }
+    .flow-item.visible { opacity: 1; transform: translateY(0); }
+    .pyr-row { display: flex; }
+    /* level margins — inline gap used per row */
+    .pyr-l1 { margin-left: 375px; }
+    .pyr-l2 { margin-left: 225px; }
+    .pyr-l3 { margin-left: 123px; }
+    .pyr-l4 { margin-left: 46px; }
+    .pyr-card {
+      border-radius: 10px; padding: 14px 18px;
+      text-align: center; font-weight: 600; font-size: 0.87rem;
+      line-height: 1.5; box-shadow: 0 4px 18px rgba(131,24,67,0.13);
+      flex-shrink: 0;
+    }
+    .pyr-l1 .pyr-card {
+      background: linear-gradient(135deg, var(--navy), #9d174d); color: #fff;
+      width: 240px; padding: 16px 24px; font-size: 0.9rem;
+    }
+    .pyr-l2 .pyr-card {
+      background: linear-gradient(135deg, var(--blue), #ec4899); color: #fff;
+      width: 190px;
+    }
+    .pyr-l3 .pyr-card {
+      background: linear-gradient(135deg, #f472b6, #f9a8d4); color: var(--navy);
+      width: 155px;
+    }
+    .pyr-l4 .pyr-card {
+      background: linear-gradient(135deg, #fbcfe8, #fce7f3); color: var(--navy);
+      width: 95px; font-size: 0.82rem; padding: 12px 8px;
+    }
+    .flow-arrow-item {
+      width: 900px; flex-shrink: 0;
+      opacity: 0; transform: scaleY(0); transform-origin: top;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .flow-arrow-item.visible { opacity: 1; transform: scaleY(1); }
+    .pyr-svg { width: 900px; height: 88px; overflow: visible; display: block; }
+    /* Ghost cards */
+    .pyr-has-ghost { position: relative; }
+    .pyr-ghost {
+      position: absolute; top: 0;
+      width: 145px; border-radius: 10px; padding: 13px 14px;
+      text-align: center; font-size: 0.82rem; line-height: 1.45;
+      background: transparent;
+      border: 2px dashed rgba(219,39,119,0.32);
+      color: rgba(131,24,67,0.68);
+      font-style: italic; font-weight: 400;
+    }
+    .pyr-ghost-l3  { left: 593px; }
+    .pyr-ghost-l4t { left: 368px; font-size: 0.76rem; }
+    .pyr-ghost-l4s { left: 598px; font-size: 0.76rem; }
+    /* ── SECTION 5: Reporting Chart ── */
+    /* Criteria-specific overrides */
+    .criteria-diagram { position: relative; }
+    /* Lock 3-col grid so every row's center matches, regardless of desc presence */
+    .criteria-diagram .chart-row-wrap {
+      display: grid;
+      grid-template-columns: 220px 800px 220px;
+      align-items: center;
+      min-height: 60px;
+    }
+    .criteria-diagram .chart-label { width: auto; padding-right: 24px; }
+    .criteria-diagram .chart-desc  { width: auto; padding-left: 24px; border-left: 3px solid rgba(131,24,67,0.12); }
+    .criteria-diagram .chart-item,
+    .criteria-diagram .chart-arrow-item {
+      width: 800px;
+    }
+    .criteria-diagram .chart-arrow-item { height: 56px; display: flex; align-items: center; position: relative; }
+    .criteria-diagram .chart-svg { width: 800px; height: 56px; }
+    .chart-arrow-label {
+      position: absolute; left: calc(50% + 20px); top: 50%;
+      transform: translateY(-50%);
+      background: var(--white); padding: 2px 12px; border-radius: 6px;
+      font-size: 0.78rem; font-weight: 600; color: var(--muted);
+      white-space: nowrap;
+    }
+    .chart-arrow-label.green { color: var(--green); }
+    .reject-loop {
+      position: absolute; top: 0; left: 220px;
+      width: 800px; height: 320px; pointer-events: none; overflow: visible;
+    }
+    .reject-label {
+      position: absolute; top: 200px; left: 830px;
+      color: rgba(220,38,38,0.75); font-size: 0.85rem; font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .chart-diagram {
+      display: flex; flex-direction: column; gap: 6px;
+      width: max-content; max-width: none; margin: 0 auto; padding: 0 32px;
+    }
+    .chart-row-wrap { display: flex; align-items: center; }
+    .chart-label {
+      width: 120px; flex-shrink: 0; font-size: 0.85rem; font-weight: 700;
+      color: var(--muted); text-align: right; padding-right: 16px; white-space: nowrap;
+      display: flex; flex-direction: column; justify-content: center;
+      align-items: flex-end; line-height: 1.4;
+    }
+    .chart-label small { font-size: 0.73rem; font-weight: 400; color: var(--muted); margin-top: 3px; }
+    .chart-item {
+      width: 900px; flex-shrink: 0; position: relative;
+      opacity: 0; transform: translateY(22px);
+      transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
+    }
+    .chart-item.visible { opacity: 1; transform: translateY(0); }
+    .chart-row { display: flex; align-items: center; }
+    /* Box styles */
+    .chart-box {
+      border-radius: 10px; padding: 14px 18px;
+      text-align: center; font-size: 0.88rem; font-weight: 600; line-height: 1.45;
+      background: var(--white); border: 1.5px solid rgba(131,24,67,0.22);
+      box-shadow: 0 2px 8px rgba(131,24,67,0.08); flex-shrink: 0;
+    }
+    .cb-note {
+      background: linear-gradient(135deg, #f472b6, #f9a8d4); color: var(--navy);
+      font-size: 0.84rem; font-weight: 600; border-color: rgba(244,114,182,0.35);
+      box-shadow: 0 4px 14px rgba(131,24,67,0.13);
+    }
+    /* right-side description for chart rows */
+    .chart-desc {
+      flex-shrink: 0; width: 220px; padding-left: 24px;
+      border-left: 3px solid rgba(131,24,67,0.12);
+      font-size: 0.87rem; color: var(--muted); line-height: 1.65;
+      display: flex; align-items: center;
+      opacity: 0; transform: translateY(22px);
+      transition: opacity 0.6s var(--ease) 0.12s, transform 0.6s var(--ease) 0.12s;
+    }
+    .chart-item.visible ~ .chart-desc,
+    .chart-arrow-item.visible ~ .chart-desc { opacity: 1; transform: translateY(0); }
+    .chart-desc strong {
+      display: block; font-weight: 700; color: var(--navy);
+      margin-bottom: 4px; font-size: 0.88rem;
+    }
+    .cb-l3 {
+      background: linear-gradient(135deg,#f472b6,#f9a8d4); color:var(--navy);
+      border-color:rgba(244,114,182,0.35);
+    }
+    .cb-system {
+      background: linear-gradient(135deg,#e5e7eb,#f3f4f6); color:var(--navy);
+      border-color:rgba(131,24,67,0.2);
+    }
+    .cb-reject {
+      background:transparent; border:1.5px dashed rgba(220,38,38,0.4);
+      color:rgba(220,38,38,0.65); box-shadow:none; font-style:italic; font-weight:400;
+    }
+    .cb-person {
+      background: linear-gradient(135deg,#fbcfe8,#fce7f3); color:var(--navy);
+      border-color:rgba(249,168,212,0.45); box-shadow:0 4px 14px rgba(131,24,67,0.13);
+    }
+    .cb-month {
+      background: linear-gradient(135deg,#fbcfe8,#fce7f3); color:var(--navy);
+      border-color:rgba(219,39,119,0.2);
+    }
+    .cb-ghost {
+      background:transparent; border:1.5px dashed rgba(131,24,67,0.28);
+      color:rgba(131,24,67,0.65); font-style:italic; font-weight:400;
+      box-shadow:none;
+    }
+    /* Result text */
+    .chart-result-row { display: flex; }
+    .chart-result { text-align: center; font-size: 0.8rem; font-weight: 700; line-height: 1.4; flex-shrink: 0; }
+    .cr-pass { color: var(--green); }
+    .cr-fail { color: var(--red); }
+    /* SVG connectors */
+    .chart-arrow-item {
+      width: 900px; flex-shrink: 0;
+      opacity: 0; transform: translateY(12px);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+    .chart-arrow-item.visible { opacity: 1; transform: translateY(0); }
+    .chart-svg { width: 900px; height: 84px; overflow: visible; display: block; }
+
+    /* ── Reusable Flowchart terminator (oval) for HTML sections ── */
+    .flow-oval {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--white);
+      border: 1.5px solid rgba(131,24,67,0.25);
+      border-radius: 100px;
+      padding: 12px 44px;
+      font-weight: 700; color: var(--navy);
+      font-size: 1rem;
+      box-shadow: 0 4px 14px rgba(131,24,67,0.14);
+      white-space: nowrap;
+      letter-spacing: 0.04em;
+    }
+    /* Grid layout: 120px label + 900px content + 220px desc (full 1240, matches diagram width) */
+    .flow-term-row, .flow-term-arrow {
+      display: grid;
+      grid-template-columns: 120px 900px 220px;
+      width: max-content;
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 0 32px;
+      align-items: center;
+    }
+    .flow-term-arrow { padding-top: 4px; }
+    .flow-term-row > *, .flow-term-arrow > * {
+      grid-column: 2;
+      justify-self: center;
+    }
+    .flow-term-arrow svg { width: 32px; height: 42px; }
+    /* Section 4 (workflow): pyramid centerline is at x=495 of 900px column → shift right 45px */
+    .flow-term-row.workflow-align > *,
+    .flow-term-arrow.workflow-align > * { margin-left: 90px; }
+    /* Section 5 (reporting): chart centerline is at x=400 of 900px column → shift left 50px */
+    .flow-term-row.reporting-align > *,
+    .flow-term-arrow.reporting-align > * { margin-right: 100px; }
+
+    /* ── SVG fade-in (consistent gradual reveal) ── */
+    .fc-canvas {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.85s cubic-bezier(0.22,1,0.36,1),
+                  transform 0.85s cubic-bezier(0.22,1,0.36,1);
+    }
+    .fc-canvas.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── Section 7 wrapper (grid 120 + 900 + 220, matches Section 5 chart-diagram with desc) ── */
+    .fc-section7-wrap {
+      display: grid;
+      grid-template-columns: 120px 900px 220px;
+      width: max-content;
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 0 32px;
+      align-items: stretch;
+    }
+    .fc-section7-svg {
+      grid-column: 2;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .fc-side-desc {
+      grid-column: 3;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 28px;
+      align-self: stretch;
+      padding: 28px 0;
+    }
+    .fc-side-desc-block {
+      padding-left: 24px;
+      border-left: 3px solid rgba(131,24,67,0.12);
+      font-size: 0.87rem; color: var(--muted); line-height: 1.65;
+      opacity: 0; transform: translateY(20px);
+      transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
+    }
+    .fc-side-desc-block.visible { opacity: 1; transform: translateY(0); }
+    .fc-side-desc-block strong {
+      display: block; font-weight: 700; color: var(--navy);
+      margin-bottom: 4px; font-size: 0.88rem;
+    }
+
+    /* ── Section 6 right-side description (positioned at level y, per-block border) ── */
+    .fc-desc-col-criteria {
+      position: relative;
+      width: 220px;
+      flex-shrink: 0;
+      height: 836px;
+    }
+    .fc-desc-criteria {
+      position: absolute;
+      width: 220px;
+      transform: translateY(-50%);
+      padding-left: 24px;
+      border-left: 3px solid rgba(131,24,67,0.12);
+      font-size: 0.87rem; color: var(--muted); line-height: 1.65;
+      box-sizing: border-box;
+      opacity: 0;
+      transition: opacity 0.6s var(--ease);
+    }
+    .fc-desc-criteria.visible { opacity: 1; }
+    .fc-desc-criteria strong {
+      display: block; font-weight: 700; color: var(--navy);
+      margin-bottom: 4px; font-size: 0.88rem;
+    }
+    .fc-desc-criteria.l4 { top: 133px; }
+    .fc-desc-criteria.l3 { top: 418px; }
+    @media (max-width: 1024px) {
+      .fc-desc-col-criteria { display: none; }
+      .fc-section7-wrap { grid-template-columns: 1fr; }
+      .fc-side-desc { grid-column: 1; flex-direction: row; gap: 18px; padding: 16px 0 0; }
+    }
+
+    /* ── SECTION 6: Criteria Flowchart wrapper ── */
+    .fc-wrap {
+      display: flex;
+      width: max-content;
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 0 32px;
+      align-items: flex-start;
+    }
+    .fc-lbl-col {
+      width: 120px;
+      flex-shrink: 0;
+      position: relative;
+      height: 836px;
+    }
+    .fc-lbl {
+      position: absolute;
+      width: 100%;
+      padding-right: 16px;
+      text-align: right;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--muted);
+      white-space: nowrap;
+      transform: translateY(-50%);
+    }
+    .fc-lbl-l4 { top: 133px; }
+    .fc-lbl-l3 { top: 418px; }
+    .fc-svg-col {
+      width: 900px;
+      flex-shrink: 0;
+      display: flex;
+      justify-content: center;
+    }
+    @media (max-width: 1024px) {
+      .fc-svg-col { width: auto; flex: 1; min-width: 0; }
+      .fc-lbl-col { width: 100px; height: auto; min-height: 600px; }
+    }
+
+    /* ── SECTION 6: Criteria ── */
+    .criteria-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 24px; max-width: 760px; margin-bottom: 40px;
+    }
+    .criteria-card { border-radius: var(--radius); padding: 32px 28px; box-shadow: var(--shadow); }
+    .criteria-card.pass { background: var(--green-bg); border: 2px solid var(--green); }
+    .criteria-card.fail { background: var(--red-bg); border: 2px solid var(--red); }
+    .criteria-icon { font-size: 2.2rem; margin-bottom: 12px; }
+    .criteria-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; }
+    .criteria-card.pass h3 { color: var(--green); }
+    .criteria-card.fail h3 { color: var(--red); }
+    .criteria-card p { font-size: 0.88rem; color: var(--text); line-height: 1.7; }
+    .report-flow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .report-card {
+      background: var(--white); border: 1.5px solid rgba(131,24,67,0.12);
+      border-radius: var(--radius); padding: 16px 24px;
+      font-size: 0.9rem; font-weight: 600; color: var(--navy); box-shadow: var(--shadow);
+    }
+    .report-arrow { font-size: 1.4rem; color: var(--blue); }
+    .review-diagram-wrap {
+      width: 100vw; margin-left: calc(50% - 50vw);
+      overflow-x: auto; overflow-y: hidden; padding: 10px 0 6px;
+      scrollbar-width: none;
+    }
+    .review-diagram-wrap::-webkit-scrollbar { display: none; }
+    .review-sticky-outer {
+      height: calc(3 * 100vh); position: relative;
+    }
+    .review-sticky-inner {
+      position: sticky; top: 64px;
+      min-height: calc(100vh - 64px);
+      display: flex; align-items: center;
+      padding: 24px 0;
+    }
+    .review-canvas {
+      position: relative; width: 1240px; height: 680px; margin: 0 auto;
+    }
+    .review-lines {
+      position: absolute; inset: 0; width: 1240px; height: 680px;
+      pointer-events: none;
+    }
+    .review-line,
+    .review-step {
+      opacity: 0; transform: translateY(24px);
+      transition: opacity 0.55s cubic-bezier(0.22,1,0.36,1),
+                  transform 0.55s cubic-bezier(0.22,1,0.36,1);
+    }
+    .review-line.visible,
+    .review-step.visible {
+      opacity: 1; transform: translateY(0);
+    }
+    .review-level {
+      position: absolute; left: 0; width: 120px; padding-right: 16px;
+      color: var(--muted); font-size: 0.85rem; font-weight: 700;
+      line-height: 1.4; text-align: right; white-space: nowrap;
+    }
+    .review-level.l3 { top: 194px; }
+    .review-level.l4 { top: 328px; }
+    .review-desc {
+      position: absolute; left: 1020px; width: 220px; padding-left: 24px;
+      border-left: 3px solid rgba(131,24,67,0.12);
+      color: var(--muted); font-size: 0.87rem; line-height: 1.65;
+    }
+    .review-desc strong {
+      display: block; color: var(--navy); font-size: 0.88rem;
+      font-weight: 700; margin-bottom: 4px;
+    }
+    .review-desc.l3 { top: 174px; }
+    .review-desc.l4 { top: 304px; }
+    .review-node {
+      position: absolute; display: flex; align-items: center; justify-content: center;
+      min-width: 140px; min-height: 58px; padding: 14px 18px;
+      border: 1.5px solid rgba(131,24,67,0.18);
+      border-radius: 10px; color: var(--navy);
+      font-size: 0.95rem; font-weight: 600; text-align: center; line-height: 1.45;
+      box-shadow: 0 4px 18px rgba(131,24,67,0.13);
+    }
+    .review-node.month,
+    .review-node.employee {
+      background: linear-gradient(135deg, #fbcfe8, #fce7f3);
+      border-color: rgba(249,168,212,0.45); color: var(--navy);
+    }
+    .review-node.report {
+      background: var(--white);
+      border-color: rgba(131,24,67,0.18); color: var(--navy);
+    }
+    .review-node.checker {
+      background: linear-gradient(135deg, #f472b6, #f9a8d4);
+      border-color: rgba(244,114,182,0.35); color: var(--navy);
+    }
+    .review-node.system {
+      background: linear-gradient(135deg, #e5e7eb, #f3f4f6);
+      border-color: rgba(131,24,67,0.28); color: var(--navy);
+    }
+    .review-node.month { left: 310px; top: 555px; min-width: 120px; }
+    .review-node.report { left: 445px; top: 430px; min-width: 170px; }
+    .review-node.employee { left: 650px; top: 305px; min-width: 140px; }
+    .review-node.checker { left: 570px; top: 170px; min-width: 300px; min-height: 74px; }
+    .review-node.system { left: 650px; top: 35px; min-width: 160px; }
+    .review-note {
+      position: absolute; color: var(--navy); font-size: 1.02rem; font-weight: 600;
+    }
+    .review-note.approve { left: 600px; top: 126px; color: var(--green); }
+    .review-note.reject { left: 866px; top: 250px; color: var(--red); }
+    .review-pass {
+      position: absolute; left: 310px; top: 624px;
+      color: #00b050; font-size: 0.92rem; font-weight: 700;
+    }
+
+    /* ── SECTION 7: Summary Steps ── */
+    .summary-steps-diagram {
+      margin-top: -4px;
+      margin-bottom: 18px;
+    }
+    .summary-steps-diagram .chart-row-wrap {
+      min-height: 78px;
+    }
+    .summary-steps-diagram .chart-arrow-item {
+      height: 76px;
+    }
+    .summary-steps-diagram .chart-svg {
+      width: 800px;
+      height: 76px;
+    }
+    .summary-steps-diagram .chart-desc {
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+
+    /* ── SECTION 8: Summary ── */
+    #summary { background: linear-gradient(160deg, #581c34 0%, #831843 60%, #6b1d3a 100%); }
+    #summary h2.section-title { color: #fff; }
+    #summary h2.section-title::after { background: linear-gradient(90deg, var(--gold), #f472b6); }
+    #summary .section-label { background: rgba(245,158,11,0.15); color: var(--gold); }
+    .summary-intro {
+      color: #cbd5e1; max-width: 760px; margin: -24px 0 34px;
+      font-size: 1rem; line-height: 1.8;
+    }
+    .summary-grid {
+      display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px; max-width: 1040px; margin-bottom: 60px;
+    }
+    .summary-card {
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: var(--radius); padding: 28px 24px;
+      display: flex; align-items: flex-start; gap: 14px; transition: background 0.25s;
+      min-height: 178px;
+    }
+    .summary-card:hover { background: rgba(255,255,255,0.12); }
+    .summary-card .s-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 34px; height: 34px; border-radius: 50%;
+      background: rgba(245,158,11,0.15); color: var(--gold);
+      font-size: 0.78rem; font-weight: 700; flex-shrink: 0;
+      letter-spacing: 0.04em;
+    }
+    .summary-card p { color: #cbd5e1; font-size: 0.95rem; line-height: 1.65; }
+    .summary-card p strong {
+      display: block; color: #fff; font-weight: 600; margin-bottom: 4px; font-size: 1rem;
+    }
+    .footer {
+      text-align: center; color: rgba(255,255,255,0.35); font-size: 0.82rem;
+      padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); letter-spacing: 0.04em;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .summary-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 768px) {
+      nav#navbar { overflow-x: auto; justify-content: flex-start; padding: 0 12px; }
+      nav#navbar .brand { display: none; }
+      nav#navbar a { font-size: 0.75rem; padding: 5px 9px; }
+      h2.section-title { font-size: 1.55rem; }
+      .criteria-grid { grid-template-columns: 1fr; }
+      .summary-grid { grid-template-columns: 1fr; }
+      .hb-l1 { padding: 16px 40px; font-size: 1rem; }
+      .hb-l2 { padding: 12px 28px; }
+      .hb-l4 { font-size: 0.82rem; padding: 10px 16px; }
+      .agenda-table-wrap { overflow-x: auto; }
+      .agenda-table { min-width: 760px; }
+      .hier-diagram {
+        max-width: 100%;
+      }
+      .hier-group,
+      .hier-conn {
+        grid-template-columns: 112px minmax(0, 1fr);
+        column-gap: 12px;
+      }
+      .workflow-sticky-outer { height: calc(4 * 100vh); }
+      .pyr-l1 .pyr-card { width: 180px; }
+      .pyr-l2 .pyr-card { width: 150px; }
+      .pyr-l3 .pyr-card { width: 170px; }
+      .pyr-l4 .pyr-card { width: 110px; font-size: 0.78rem; }
+      .review-diagram-wrap { margin: 0 -18px; padding-left: 18px; }
+      .review-sticky-outer { height: calc(2.8 * 100vh); }
+    }
+    @media (max-width: 480px) {
+      .container { padding: 0 18px; }
+      .hb-l4 { font-size: 0.78rem; padding: 9px 12px; }
+      .hier-row { gap: 6px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="progress-bar"></div>
+
+  <nav id="navbar">
+    <span class="brand">OKR-KPI</span>
+    <div class="nav-links">
+      <a href="#agenda"        data-section="agenda"        data-i18n="nav-agenda">Agenda</a>
+      <a href="#overview"      data-section="overview"      data-i18n="nav-overview">Overview</a>
+      <a href="#workflow"      data-section="workflow"      data-i18n="nav-target">Target</a>
+      <a href="#reporting"     data-section="reporting"     data-i18n="nav-reporting">Reporting</a>
+      <a href="#criteria"      data-section="criteria"      data-i18n="nav-criteria">Report Review</a>
+      <a href="#summary-steps" data-section="summary-steps" data-i18n="nav-sum-steps">Report Summary</a>
+      <a href="#summary"       data-section="summary"       data-i18n="nav-summary">Summary</a>
+    </div>
+    <button class="lang-btn" id="lang-btn">EN</button>
+  </nav>
+
+  <!-- SECTION 1: Hero -->
+  <section id="hero">
+    <div class="hero-inner">
+      <h1 class="hero-title reveal" style="transition-delay:0.2s">
+        OKR-KPI<br /><span>System</span>
+      </h1>
+      <p class="hero-subtitle reveal" style="transition-delay:0.35s" data-i18n="hero-subtitle">กำหนดเป้าหมายและตัวชี้วัด</p>
+      <div class="scroll-arrow reveal" style="transition-delay:0.6s">
+        <span>Scroll</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14M5 12l7 7 7-7"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 2: Agenda (Table) -->
+  <section id="agenda">
+    <div class="container">
+      <h2 class="section-title reveal" data-i18n="agenda-title">หัวข้อการนำเสนอระบบ OKR-KPI</h2>
+
+      <div class="agenda-table-wrap reveal">
+        <table class="agenda-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th data-i18n="th-topic">หัวข้อ</th>
+              <th data-i18n="th-detail">รายละเอียด</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="num-cell" rowspan="2"><span class="agenda-num-badge">1</span></td>
+              <td class="topic-cell" rowspan="2" data-i18n="row1-topic">กำหนดเป้าหมายและตัวชี้วัด</td>
+              <td class="text-cell" data-i18n="row1-d1">การใช้งานในส่วนของ DGM, GM</td>
+            </tr>
+            <tr>
+              <td class="text-cell" data-i18n="row1-d2">การใช้งานในส่วนของ Manager</td>
+            </tr>
+            <tr>
+              <td class="num-cell" rowspan="3"><span class="agenda-num-badge">2</span></td>
+              <td class="topic-cell" rowspan="3" data-i18n="row2-topic">การเพิ่มรายงาน KPIs</td>
+              <td class="text-cell" data-i18n="row2-d1">การใช้งานในส่วนของ Staff, Engineer, Senior Engineer, Supervisor</td>
+            </tr>
+            <tr>
+              <td class="text-cell" data-i18n="row2-d2">การประมวลผลหลังจาก Staff and above position ส่ง Submit</td>
+            </tr>
+            <tr>
+              <td class="text-cell" data-i18n="row2-d3">กรณีที่ทำไม่ได้ตาม Target ต้องแนบเอกสาร Action Plan</td>
+            </tr>
+            <tr>
+              <td class="num-cell"><span class="agenda-num-badge">3</span></td>
+              <td class="topic-cell" data-i18n="row3-topic">การตรวจ KPIs</td>
+              <td class="text-cell" data-i18n="row3-d1">Manager ตรวจ KPIs ของทีมตนเอง</td>
+            </tr>
+            <tr>
+              <td class="num-cell" rowspan="2"><span class="agenda-num-badge">4</span></td>
+              <td class="topic-cell" rowspan="2" data-i18n="row4-topic">การดูสรุปรายงาน</td>
+              <td class="text-cell" data-i18n="row4-d1">สรุปรายงาน</td>
+            </tr>
+            <tr>
+              <td class="text-cell" data-i18n="row4-d2">สรุปภาพรวมคะแนน</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3: Overview + Hierarchy Diagram -->
+  <section id="overview">
+    <div class="container">
+      <h2 class="section-title reveal" data-i18n="overview-title">OKR-KPI System คืออะไร?</h2>
+      <p class="overview-text reveal" data-i18n="overview-text">
+        ระบบ OKR-KPI คือระบบที่ใช้กำหนดเป้าหมาย วัดผลการดำเนินงาน และติดตามความก้าวหน้า
+        ของพนักงานและแผนก เพื่อให้การทำงานสอดคล้องกับเป้าหมายขององค์กร
+      </p>
+
+      <div class="hier-diagram">
+
+          <div class="hier-group reveal" style="transition-delay:0.05s">
+            <div class="hier-tag" data-i18n="level-1">ลำดับชั้นที่ 1</div>
+            <div class="hier-row">
+              <div class="hier-box hb-l1">CEO</div>
+            </div>
+          </div>
+
+          <div class="hier-conn reveal" style="transition-delay:0.18s">
+            <div class="hier-conn-line"></div>
+            <div class="hier-conn-arrow"></div>
+          </div>
+
+          <div class="hier-group reveal" style="transition-delay:0.30s">
+            <div class="hier-tag" data-i18n="level-2">ลำดับชั้นที่ 2</div>
+            <div class="hier-row">
+              <div class="hier-box hb-l2">DGM</div>
+              <span class="hier-sep">·</span>
+              <div class="hier-box hb-l2">GM</div>
+            </div>
+          </div>
+
+          <div class="hier-conn reveal" style="transition-delay:0.42s">
+            <div class="hier-conn-line"></div>
+            <div class="hier-conn-arrow"></div>
+          </div>
+
+          <div class="hier-group reveal" style="transition-delay:0.54s">
+            <div class="hier-tag" data-i18n="level-3">ลำดับชั้นที่ 3</div>
+            <div class="hier-row">
+              <div class="hier-box hb-l3">Manager(1)</div>
+              <span class="hier-sep">·</span>
+              <div class="hier-box hb-l3">Manager(2)</div>
+            </div>
+          </div>
+
+          <div class="hier-conn reveal" style="transition-delay:0.66s">
+            <div class="hier-conn-line"></div>
+            <div class="hier-conn-arrow"></div>
+          </div>
+
+          <div class="hier-group reveal" style="transition-delay:0.78s">
+            <div class="hier-tag" data-i18n="level-4">ลำดับชั้นที่ 4</div>
+            <div class="hier-row">
+              <div class="hier-box hb-l4">Staff</div>
+              <span class="hier-sep">·</span>
+              <div class="hier-box hb-l4">Engineer</div>
+              <span class="hier-sep">·</span>
+              <div class="hier-box hb-l4">Senior Engineer</div>
+              <span class="hier-sep">·</span>
+              <div class="hier-box hb-l4">Supervisor</div>
+            </div>
+          </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- SVG marker shared def (invisible) -->
+  <svg width="0" height="0" style="position:absolute;overflow:hidden">
+    <defs>
+      <marker id="ah" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto">
+        <polygon points="0 0, 9 4, 0 8" fill="rgba(219,39,119,0.6)"/>
+      </marker>
+      <marker id="ah-d" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto">
+        <polygon points="0 0, 9 4, 0 8" fill="rgba(219,39,119,0.38)"/>
+      </marker>
+      <marker id="ah-k" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto">
+        <polygon points="0 0, 9 4, 0 8" fill="rgba(131,24,67,0.75)"/>
+      </marker>
+      <marker id="ah-kd" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto">
+        <polygon points="0 0, 9 4, 0 8" fill="rgba(131,24,67,0.35)"/>
+      </marker>
+      <marker id="ah-black" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto">
+        <polygon points="0 0, 9 4, 0 8" fill="#111"/>
+      </marker>
+      <marker id="ah-navy" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto">
+        <polygon points="0 0, 9 4, 0 8" fill="rgba(131,24,67,0.72)"/>
+      </marker>
+      <marker id="ah-green" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto">
+        <polygon points="0 0, 9 4, 0 8" fill="#16a34a"/>
+      </marker>
+      <marker id="ah-red" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto">
+        <polygon points="0 0, 9 4, 0 8" fill="#dc2626"/>
+      </marker>
+    </defs>
+  </svg>
+
+  <!-- SECTION 4: Workflow (Sticky Scroll Pyramid) -->
+  <section id="workflow">
+
+    <div class="workflow-header">
+      <div class="container">
+        <h2 class="section-title reveal" style="margin-bottom:0" data-i18n="workflow-title">ขั้นตอนการกำหนดเป้าหมายตัวชี้วัด</h2>
+        <p class="workflow-subtitle reveal" style="transition-delay:0.15s" data-i18n="workflow-subtitle">ตัวอย่าง :</p>
+      </div>
+    </div>
+
+    <div class="flow-term-row workflow-align reveal" style="margin-top:8px;">
+      <div class="flow-oval" data-i18n="fc-start">เริ่มต้น</div>
+    </div>
+    <div class="flow-term-arrow workflow-align reveal">
+      <svg viewBox="0 0 32 40" fill="none" stroke="rgba(131,24,67,0.6)" stroke-width="2" stroke-linecap="round">
+        <line x1="16" y1="2" x2="16" y2="34" marker-end="url(#ah-navy)"/>
+      </svg>
+    </div>
+
+    <div class="workflow-sticky-outer" id="workflowOuter">
+      <div class="workflow-sticky-inner">
+        <div class="pyr-diagram" id="flowDiagram">
+
+          <!-- ── Level 1 — center=495 ── -->
+          <div class="pyr-row-wrap">
+            <div class="pyr-level-lbl" data-i18n="level-1">ลำดับชั้นที่ 1</div>
+            <div class="flow-item" data-flow="0">
+              <div class="pyr-row pyr-l1">
+                <div class="pyr-card" data-i18n-html="pyr-card-l1">Award Company<br /><small style="font-weight:400;font-size:0.8rem;">Top supplier Ford &amp; AAT / 5S / Zero PPM</small></div>
+              </div>
+            </div>
+            <div class="pyr-desc">
+              <div data-i18n-html="pyr-desc-l1"><strong>ลำดับชั้นที่ 1</strong>กำหนดเป้าหมายองค์กรให้ชัดเจน เพื่อเป็นทิศทางหลักของบริษัท (ผู้ดูแลระบบกำหนด)</div>
+            </div>
+          </div>
+
+          <!-- Arrow: L1(495) → OJT(320) & Skills(670) solid -->
+          <div class="pyr-row-wrap">
+            <div class="pyr-level-lbl"></div>
+            <div class="flow-arrow-item" data-flow="0">
+              <svg class="pyr-svg" viewBox="0 0 900 84"
+                   fill="none" stroke="rgba(219,39,119,0.58)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="495" y1="2"  x2="495" y2="32"/>
+                <line x1="320" y1="32" x2="670" y2="32"/>
+                <line x1="320" y1="32" x2="320" y2="80" marker-end="url(#ah)"/>
+                <line x1="670" y1="32" x2="670" y2="80" marker-end="url(#ah)"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- ── Level 2 — OJT center=320, Skills center=670 ── -->
+          <div class="pyr-row-wrap">
+            <div class="pyr-level-lbl" data-i18n="level-2">ลำดับชั้นที่ 2</div>
+            <div class="flow-item" data-flow="1">
+              <div class="pyr-row pyr-l2" style="gap: 160px;">
+                <div class="pyr-card" data-i18n-html="pyr-card-l2a">OJT Completion Rate<br />(100%)</div>
+                <div class="pyr-card" data-i18n-html="pyr-card-l2b">Skills Matrix Accuracy<br />(100%)</div>
+              </div>
+            </div>
+            <div class="pyr-desc">
+              <div data-i18n-html="pyr-desc-l2"><strong>ลำดับชั้นที่ 2</strong>ถ่ายทอดเป้าหมายองค์กรจากลำดับชั้นที่ 1 ให้เป็นเป้าหมายระดับฝ่ายหรือสายงาน (ผู้ดูแลระบบกำหนด)</div>
+            </div>
+          </div>
+
+          <!-- Arrow: OJT(320)→HR(200)&Trainer(440) solid + Skills(670)→เป้าหมาย(670) dashed -->
+          <div class="pyr-row-wrap">
+            <div class="pyr-level-lbl"></div>
+            <div class="flow-arrow-item" data-flow="1">
+              <svg class="pyr-svg" viewBox="0 0 900 84"
+                   fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="320" y1="2"  x2="320" y2="32" stroke="rgba(219,39,119,0.58)"/>
+                <line x1="200" y1="32" x2="440" y2="32" stroke="rgba(219,39,119,0.58)"/>
+                <line x1="200" y1="32" x2="200" y2="80" stroke="rgba(219,39,119,0.58)" marker-end="url(#ah)"/>
+                <line x1="440" y1="32" x2="440" y2="80" stroke="rgba(219,39,119,0.58)" marker-end="url(#ah)"/>
+                <line x1="670" y1="2"  x2="670" y2="80" stroke="rgba(219,39,119,0.38)" stroke-dasharray="6,4" marker-end="url(#ah-d)"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- ── ลำดับชั้นที่ 3 — HR center=200, Trainer center=440, Ghost center=670 ── -->
+          <div class="pyr-row-wrap">
+            <div class="pyr-level-lbl" data-i18n="level-3">ลำดับชั้นที่ 3</div>
+            <div class="flow-item pyr-has-ghost" data-flow="2">
+              <div class="pyr-row pyr-l3" style="gap: 85px;">
+                <div class="pyr-card" data-i18n-html="pyr-card-l3a">หากพนักงานยังสอบ OJT ไม่ผ่าน<br />HR ไม่อนุญาตให้เข้าพื้นที่ไลน์ผลิต</div>
+                <div class="pyr-card" data-i18n-html="pyr-card-l3b">ต้องมี Trainer / Buddy<br />ชาวไทยและพม่า พร้อมเอกสาร OJT</div>
+              </div>
+              <div class="pyr-ghost pyr-ghost-l3" data-i18n="pyr-ghost-l3">เป้าหมายอื่นๆ</div>
+            </div>
+            <div class="pyr-desc">
+              <div data-i18n-html="pyr-desc-l3"><strong>ลำดับชั้นที่ 3</strong>กำหนดเป้าหมายระดับแผนกให้สอดคล้องกับลำดับชั้นที่ 1 และ 2 พร้อมสื่อสารให้พนักงานในสังกัดรับทราบ (ผู้ใช้งานกำหนดเป้าหมายด้วยตัวเอง)</div>
+            </div>
+          </div>
+
+          <!-- Arrow: HR(200)→Emps(93,200,307) solid + Trainer(440)→ghost-t(440) + เป้าหมาย(670)→ghost-s(670) dashed -->
+          <div class="pyr-row-wrap">
+            <div class="pyr-level-lbl"></div>
+            <div class="flow-arrow-item" data-flow="2">
+              <svg class="pyr-svg" viewBox="0 0 900 84"
+                   fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="200" y1="2"  x2="200" y2="28" stroke="rgba(219,39,119,0.58)"/>
+                <line x1="93"  y1="28" x2="307" y2="28" stroke="rgba(219,39,119,0.58)"/>
+                <line x1="93"  y1="28" x2="93"  y2="80" stroke="rgba(219,39,119,0.58)" marker-end="url(#ah)"/>
+                <line x1="200" y1="28" x2="200" y2="80" stroke="rgba(219,39,119,0.58)" marker-end="url(#ah)"/>
+                <line x1="307" y1="28" x2="307" y2="80" stroke="rgba(219,39,119,0.58)" marker-end="url(#ah)"/>
+                <line x1="440" y1="2"  x2="440" y2="80" stroke="rgba(219,39,119,0.38)" stroke-dasharray="6,4" marker-end="url(#ah-d)"/>
+                <line x1="670" y1="2"  x2="670" y2="80" stroke="rgba(219,39,119,0.38)" stroke-dasharray="6,4" marker-end="url(#ah-d)"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- ── ลำดับชั้นที่ 4 — Emp centers=93,200,307 Ghost-t=440 Ghost-s=670 ── -->
+          <div class="pyr-row-wrap">
+            <div class="pyr-level-lbl" data-i18n="level-4">ลำดับชั้นที่ 4</div>
+            <div class="flow-item pyr-has-ghost" data-flow="3">
+              <div class="pyr-row pyr-l4" style="gap: 12px;">
+                <div class="pyr-card" data-i18n-html="pyr-card-l4a">พนักงาน<br />คนที่ 1</div>
+                <div class="pyr-card" data-i18n-html="pyr-card-l4b">พนักงาน<br />คนที่ 2</div>
+                <div class="pyr-card" data-i18n-html="pyr-card-l4c">พนักงาน<br />คนที่ 3</div>
+              </div>
+              <div class="pyr-ghost pyr-ghost-l4t" data-i18n-html="pyr-ghost-l4t">พนักงานอื่นๆ<br />(ภายใต้สังกัด)</div>
+              <div class="pyr-ghost pyr-ghost-l4s" data-i18n-html="pyr-ghost-l4s">พนักงานอื่นๆ<br />(ภายใต้สังกัด)</div>
+            </div>
+            <div class="pyr-desc">
+              <div data-i18n-html="pyr-desc-l4"><strong>ลำดับชั้นที่ 4</strong>บันทึกรายงาน KPI และผลคะแนนรายเดือนให้เชื่อมโยงกับเป้าหมายองค์กร (ผู้ใช้งานเพิ่มรายงาน KPI ด้วยตัวเอง)</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-term-arrow workflow-align reveal">
+      <svg viewBox="0 0 32 40" fill="none" stroke="rgba(131,24,67,0.6)" stroke-width="2" stroke-linecap="round">
+        <line x1="16" y1="2" x2="16" y2="34" marker-end="url(#ah-navy)"/>
+      </svg>
+    </div>
+    <div class="flow-term-row workflow-align reveal" style="padding-bottom:40px;">
+      <div class="flow-oval" data-i18n="fc-end">สิ้นสุด</div>
+    </div>
+
+  </section>
+
+  <!-- SECTION 5: Reporting Chart -->
+  <section id="reporting">
+    <div class="container">
+      <h2 class="section-title reveal" data-i18n="reporting-title">ขั้นตอนการทำงานเพิ่มรายงาน KPIs</h2>
+    </div>
+
+    <div class="flow-term-row reporting-align reveal" style="margin-bottom:8px;">
+      <div class="flow-oval" data-i18n="fc-start">เริ่มต้น</div>
+    </div>
+    <div class="flow-term-arrow reporting-align reveal">
+      <svg viewBox="0 0 32 40" fill="none" stroke="rgba(131,24,67,0.6)" stroke-width="2" stroke-linecap="round">
+        <line x1="16" y1="2" x2="16" y2="34" marker-end="url(#ah-navy)"/>
+      </svg>
+    </div>
+
+    <div class="chart-diagram">
+
+      <!-- ── ลำดับชั้นที่ 1 — บริษัทที่ได้รับรางวัล ── -->
+      <div class="chart-row-wrap">
+        <div class="chart-label" data-i18n="level-1">ลำดับชั้นที่ 1</div>
+        <div class="chart-item" data-chart="0">
+          <div class="chart-row" style="margin-left:260px;">
+            <div class="chart-box" style="width:280px;background:linear-gradient(135deg,var(--navy),#9d174d);color:#fff;border-color:rgba(131,24,67,0.4);box-shadow:0 4px 18px rgba(131,24,67,0.22);font-size:0.95rem;" data-i18n-html="rep-l1-box">บริษัทที่ได้รับรางวัล<br /><small style="font-weight:400;font-size:0.8rem;">ผู้จัดหาชั้นนำ Ford &amp; AAT / 5S / Zero PPM</small></div>
+          </div>
+        </div>
+        <div class="chart-desc"></div>
+      </div>
+
+      <div class="chart-row-wrap">
+        <div class="chart-label"></div>
+        <div class="chart-arrow-item" data-chart="0">
+          <svg class="chart-svg" viewBox="0 0 900 84" fill="none" stroke="rgba(219,39,119,0.58)" stroke-width="2" stroke-linecap="round">
+            <line x1="400" y1="2" x2="400" y2="80" marker-end="url(#ah)"/>
+          </svg>
+        </div>
+        <div class="chart-desc" style="min-height:120px;align-items:center;">
+          <div data-i18n-html="chart-desc-rep-l12"><strong>ลำดับชั้นที่ 1 และลำดับชั้นที่ 2</strong>พนักงานตรวจสอบเป้าหมายตัวชี้วัดของลำดับชั้นที่ 1 และ<span style="white-space:nowrap;">ลำดับชั้นที่ 2</span> หลังจากนั้นพิจารณา<span style="white-space:nowrap;">ความสอดคล้อง</span></div>
+        </div>
+      </div>
+
+      <!-- ── ลำดับชั้นที่ 2 — อัตราการสำเร็จ OJT ── -->
+      <div class="chart-row-wrap">
+        <div class="chart-label" data-i18n="level-2">ลำดับชั้นที่ 2</div>
+        <div class="chart-item" data-chart="1">
+          <div class="chart-row" style="margin-left:300px;">
+            <div class="chart-box" style="width:200px;background:linear-gradient(135deg,var(--blue),#ec4899);color:#fff;border-color:rgba(219,39,119,0.4);box-shadow:0 4px 18px rgba(131,24,67,0.18);" data-i18n-html="rep-l2-box">อัตราการสำเร็จ OJT<br />(100%)</div>
+          </div>
+        </div>
+        <div class="chart-desc"></div>
+      </div>
+
+      <!-- ── ลูกศร L2 → L3 (ผ่านเส้นคั่น) ── -->
+      <div class="chart-row-wrap">
+        <div class="chart-label"></div>
+        <div class="chart-arrow-item" data-chart="1">
+          <svg class="chart-svg" viewBox="0 0 900 84" fill="none" stroke="rgba(219,39,119,0.58)" stroke-width="2" stroke-linecap="round">
+            <line x1="400" y1="2" x2="400" y2="80" marker-end="url(#ah)"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- ── เส้นคั่นระหว่าง ลำดับชั้น 2 และ ลำดับชั้น 3 ── -->
+      <div class="chart-row-wrap" style="margin:8px 0;">
+        <div class="chart-label"></div>
+        <div style="width:900px;border-top:2px dashed rgba(131,24,67,0.28);"></div>
+      </div>
+
+      <div class="chart-row-wrap">
+        <div class="chart-label" data-i18n="level-3">ลำดับชั้นที่ 3</div>
+        <div class="chart-item" data-chart="2">
+          <div class="chart-row" style="margin-left:200px;">
+            <div class="chart-box cb-note" style="width:400px;" data-i18n="report-ojt-box">หากพนักงานยังสอบ OJT ไม่ผ่าน HR จะไม่อนุญาตให้เข้าพื้นที่ไลน์ผลิตเด็ดขาด</div>
+          </div>
+        </div>
+        <div class="chart-desc">
+          <div data-i18n-html="chart-desc-rep-l3"><strong>ลำดับชั้นที่ 3</strong>พนักงานตรวจสอบเป้าหมายตัวชี้วัดของลำดับชั้นที่ 3 และพิจารณาความสอดคล้อง</div>
+        </div>
+      </div>
+
+      <div class="chart-row-wrap">
+        <div class="chart-label"></div>
+        <div class="chart-arrow-item" data-chart="2">
+          <svg class="chart-svg" viewBox="0 0 900 84" fill="none" stroke="rgba(219,39,119,0.58)" stroke-width="2" stroke-linecap="round">
+            <line x1="400" y1="2" x2="400" y2="80" marker-end="url(#ah)"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="chart-row-wrap">
+        <div class="chart-label" data-i18n="level-4">ลำดับชั้นที่ 4</div>
+        <div class="chart-item" data-chart="3">
+          <div class="chart-row" style="margin-left:335px;">
+            <div class="chart-box cb-person" style="width:130px;" data-i18n="emp-box">พนักงาน</div>
+          </div>
+        </div>
+        <div class="chart-desc">
+          <div data-i18n-html="chart-desc-rep-l4"><strong>ลำดับชั้นที่ 4</strong>พนักงานเพิ่มรายงาน KPI และผลคะแนนรายเดือน</div>
+        </div>
+      </div>
+
+      <div class="chart-row-wrap">
+        <div class="chart-label"></div>
+        <div class="chart-arrow-item" data-chart="3">
+          <svg class="chart-svg" viewBox="0 0 900 84" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="400" y1="2"  x2="400" y2="28" stroke="rgba(219,39,119,0.58)"/>
+            <line x1="220" y1="28" x2="400" y2="28" stroke="rgba(219,39,119,0.58)"/>
+            <line x1="220" y1="28" x2="220" y2="80" stroke="rgba(219,39,119,0.58)" marker-end="url(#ah)"/>
+            <line x1="400" y1="28" x2="570" y2="28" stroke="rgba(219,39,119,0.38)" stroke-dasharray="6,4"/>
+            <line x1="570" y1="28" x2="570" y2="80" stroke="rgba(219,39,119,0.38)" stroke-dasharray="6,4" marker-end="url(#ah-d)"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="chart-row-wrap">
+        <div class="chart-label"></div>
+        <div class="chart-item" data-chart="4" style="position:relative;min-height:46px;">
+          <div class="chart-row" style="margin-left:140px;">
+            <div class="chart-box" style="width:160px;" data-i18n="report-1">KPI หัวข้อที่ 1</div>
+          </div>
+          <div class="chart-box cb-ghost" style="position:absolute;top:0;left:490px;width:160px;" data-i18n="report-2">KPI หัวข้อที่ 2</div>
+        </div>
+      </div>
+
+      <div class="chart-row-wrap">
+        <div class="chart-label"></div>
+        <div class="chart-arrow-item" data-chart="4">
+          <svg class="chart-svg" viewBox="0 0 900 84" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="220" y1="2"  x2="220" y2="28" stroke="rgba(219,39,119,0.58)"/>
+            <line x1="103" y1="28" x2="337" y2="28" stroke="rgba(219,39,119,0.58)"/>
+            <line x1="337" y1="28" x2="453" y2="28" stroke="rgba(219,39,119,0.38)" stroke-dasharray="6,4"/>
+            <line x1="103" y1="28" x2="103" y2="80" stroke="rgba(219,39,119,0.58)" marker-end="url(#ah)"/>
+            <line x1="220" y1="28" x2="220" y2="80" stroke="rgba(219,39,119,0.58)" marker-end="url(#ah)"/>
+            <line x1="337" y1="28" x2="337" y2="80" stroke="rgba(219,39,119,0.58)" marker-end="url(#ah)"/>
+            <line x1="453" y1="28" x2="453" y2="80" stroke="rgba(219,39,119,0.38)" stroke-dasharray="6,4" marker-end="url(#ah-d)"/>
+            <line x1="570" y1="2"  x2="570" y2="80" stroke="rgba(219,39,119,0.38)" stroke-dasharray="6,4" marker-end="url(#ah-d)"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="chart-row-wrap">
+        <div class="chart-label"></div>
+        <div class="chart-item" data-chart="5" style="position:relative;min-height:46px;">
+          <div class="chart-row" style="margin-left:55px;gap:21px;">
+            <div class="chart-box cb-month" style="width:96px;" data-i18n="month-1">มิถุนายน</div>
+            <div class="chart-box cb-month" style="width:96px;" data-i18n="month-2">กรกฎาคม</div>
+            <div class="chart-box cb-month" style="width:96px;" data-i18n="month-3">สิงหาคม</div>
+          </div>
+          <div class="chart-box cb-ghost" style="position:absolute;top:0;left:405px;width:96px;" data-i18n="month-other-1">อื่นๆ</div>
+          <div class="chart-box cb-ghost" style="position:absolute;top:0;left:505px;width:130px;" data-i18n="month-other">อื่นๆ</div>
+        </div>
+      </div>
+
+      <div class="chart-row-wrap">
+        <div class="chart-label"></div>
+        <div class="chart-arrow-item" data-chart="5">
+          <svg class="chart-svg" viewBox="0 0 900 84" fill="none" stroke-width="2" stroke-linecap="round">
+            <line x1="103" y1="2" x2="103" y2="80" stroke="rgba(219,39,119,0.58)" marker-end="url(#ah)"/>
+            <line x1="220" y1="2" x2="220" y2="80" stroke="rgba(219,39,119,0.58)" marker-end="url(#ah)"/>
+            <line x1="337" y1="2" x2="337" y2="80" stroke="rgba(219,39,119,0.58)" marker-end="url(#ah)"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="chart-row-wrap" style="margin-bottom:20px;">
+        <div class="chart-label"></div>
+        <div class="chart-item" data-chart="6">
+          <div class="chart-result-row" style="margin-left:55px;gap:21px;">
+            <div class="chart-result cr-pass" style="width:96px;" data-i18n-html="result-pass">ผ่านเกณฑ์</div>
+            <div class="chart-result cr-fail" style="width:96px;" data-i18n-html="result-fail">ไม่ผ่านเกณฑ์<br /><strong>*แนบ Action Plan</strong></div>
+            <div class="chart-result cr-pass" style="width:96px;" data-i18n-html="result-pass">ผ่านเกณฑ์</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="flow-term-arrow reporting-align reveal">
+      <svg viewBox="0 0 32 40" fill="none" stroke="rgba(131,24,67,0.6)" stroke-width="2" stroke-linecap="round">
+        <line x1="16" y1="2" x2="16" y2="34" marker-end="url(#ah-navy)"/>
+      </svg>
+    </div>
+    <div class="flow-term-row reporting-align reveal" style="padding-bottom:40px;">
+      <div class="flow-oval" data-i18n="fc-end">สิ้นสุด</div>
+    </div>
+  </section>
+
+  <!-- SECTION 6: Criteria (Flowchart) -->
+  <section id="criteria">
+    <div class="container">
+      <h2 class="section-title reveal" data-i18n="criteria-title">ขั้นตอนการตรวจรายงาน</h2>
+    </div>
+
+    <div class="fc-wrap">
+      <div class="fc-lbl-col">
+        <div class="fc-lbl fc-lbl-l4" data-i18n="level-4">ลำดับชั้นที่ 4</div>
+        <div class="fc-lbl fc-lbl-l3" data-i18n="level-3">ลำดับชั้นที่ 3</div>
+      </div>
+      <div class="fc-svg-col">
+        <svg class="fc-canvas reveal" viewBox="0 0 800 880" xmlns="http://www.w3.org/2000/svg"
+             style="width:760px;max-width:100%;height:auto;display:block;font-family:'Sarabun',sans-serif;">
+          <defs>
+            <linearGradient id="fcDiamond" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#f472b6"/><stop offset="1" stop-color="#f9a8d4"/>
+            </linearGradient>
+            <linearGradient id="fcIO" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#fbcfe8"/><stop offset="1" stop-color="#fce7f3"/>
+            </linearGradient>
+            <filter id="fcShadow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#831843" flood-opacity="0.18"/>
+            </filter>
+          </defs>
+
+          <!-- Flow arrows (navy) -->
+          <g stroke="rgba(131,24,67,0.72)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="400" y1="62"  x2="400" y2="106" marker-end="url(#ah-navy)"/>
+            <line x1="400" y1="174" x2="400" y2="208" marker-end="url(#ah-navy)"/>
+            <line x1="502" y1="270" x2="578" y2="270" marker-end="url(#ah-navy)"/>
+            <line x1="400" y1="332" x2="400" y2="378" marker-end="url(#ah-navy)"/>
+            <path d="M 665 304 V 440 H 514" marker-end="url(#ah-navy)"/>
+            <line x1="400" y1="614" x2="400" y2="656" marker-end="url(#ah-navy)"/>
+            <line x1="400" y1="724" x2="400" y2="768" marker-end="url(#ah-navy)"/>
+          </g>
+
+          <!-- Approve arrow (green) -->
+          <line x1="400" y1="502" x2="400" y2="546" stroke="#16a34a" stroke-width="2" fill="none" stroke-linecap="round" marker-end="url(#ah-green)"/>
+
+          <!-- Reject loop (red) -->
+          <path d="M 288 440 H 150 V 140 H 297" stroke="rgba(220,38,38,0.7)" stroke-width="2"
+                fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#ah-red)"/>
+
+          <!-- Branch labels -->
+          <g font-size="12" font-weight="600">
+            <text x="540" y="258" text-anchor="middle" fill="#64748b" data-i18n="fc-fail">ไม่ผ่านเกณฑ์</text>
+            <text x="412" y="358" fill="#64748b" data-i18n="fc-pass">ผ่านเกณฑ์</text>
+            <text x="175" y="432" text-anchor="middle" fill="#dc2626" data-i18n="fc-reject">ปฏิเสธ</text>
+            <text x="412" y="528" fill="#16a34a" font-weight="700" data-i18n="fc-approve">อนุมัติ</text>
+          </g>
+
+          <!-- N1: เริ่มต้น (oval / terminator) -->
+          <ellipse cx="400" cy="40" rx="60" ry="22" fill="#ffffff" stroke="rgba(131,24,67,0.22)" stroke-width="1.5" filter="url(#fcShadow)"/>
+          <text x="400" y="40" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="600" fill="#831843" data-i18n="fc-start">เริ่มต้น</text>
+
+          <!-- N2: พนักงานกรอก KPI หัวข้อที่ 1 ของแต่ละเดือน (parallelogram / I/O) — widened -->
+          <polygon points="260,108 540,108 520,172 240,172" fill="url(#fcIO)" stroke="rgba(244,114,182,0.5)" stroke-width="1.5" filter="url(#fcShadow)"/>
+          <text x="400" y="134" text-anchor="middle" font-size="13" font-weight="600" fill="#831843" data-i18n="fc-input-l1">พนักงานกรอก KPI</text>
+          <text x="400" y="154" text-anchor="middle" font-size="13" font-weight="600" fill="#831843" data-i18n="fc-input-l2">หัวข้อที่ 1 ของแต่ละเดือน</text>
+
+          <!-- N3: พนักงานพิจารณาเป้าหมาย KPI (diamond / decision) -->
+          <polygon points="400,210 500,270 400,330 300,270" fill="url(#fcDiamond)" stroke="rgba(244,114,182,0.5)" stroke-width="1.5" filter="url(#fcShadow)"/>
+          <text x="400" y="264" text-anchor="middle" font-size="13" font-weight="600" fill="#831843" data-i18n="fc-decide-l1">พนักงานพิจารณา</text>
+          <text x="400" y="284" text-anchor="middle" font-size="13" font-weight="600" fill="#831843" data-i18n="fc-decide-l2">เป้าหมาย KPI</text>
+
+          <!-- N4: แนบ Action Plan (rectangle / process) — shifted right -->
+          <rect x="580" y="238" width="170" height="64" rx="8" fill="#ffffff" stroke="rgba(131,24,67,0.22)" stroke-width="1.5" filter="url(#fcShadow)"/>
+          <text x="665" y="270" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="600" fill="#831843" data-i18n="fc-action">แนบ Action Plan</text>
+
+          <!-- N5: ตรวจรายงาน (diamond / decision) -->
+          <polygon points="400,380 510,440 400,500 290,440" fill="url(#fcDiamond)" stroke="rgba(244,114,182,0.5)" stroke-width="1.5" filter="url(#fcShadow)"/>
+          <text x="400" y="440" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="600" fill="#831843" data-i18n="fc-review">ตรวจรายงาน</text>
+
+          <!-- N6: คำนวณผลคะแนน (rectangle / process) -->
+          <rect x="310" y="548" width="180" height="64" rx="8" fill="#ffffff" stroke="rgba(131,24,67,0.22)" stroke-width="1.5" filter="url(#fcShadow)"/>
+          <text x="400" y="580" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="600" fill="#831843" data-i18n="fc-calc">คำนวณผลคะแนน</text>
+
+          <!-- N7: แสดงผลลัพธ์ (parallelogram / I/O) -->
+          <polygon points="330,658 490,658 470,722 310,722" fill="url(#fcIO)" stroke="rgba(244,114,182,0.5)" stroke-width="1.5" filter="url(#fcShadow)"/>
+          <text x="400" y="690" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="600" fill="#831843" data-i18n="fc-display">แสดงผลลัพธ์</text>
+
+          <!-- N8: สิ้นสุด (oval / terminator) -->
+          <ellipse cx="400" cy="790" rx="60" ry="22" fill="#ffffff" stroke="rgba(131,24,67,0.22)" stroke-width="1.5" filter="url(#fcShadow)"/>
+          <text x="400" y="790" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="600" fill="#831843" data-i18n="fc-end">สิ้นสุด</text>
+        </svg>
+      </div>
+
+      <div class="fc-desc-col-criteria">
+        <div class="fc-desc-criteria l4">
+          <strong data-i18n="fc-desc-l4">ลำดับชั้นที่ 4</strong>
+          <span data-i18n="fc-desc-l4-text">พนักงานกรอกรายงาน KPI ผ่านระบบ หากไม่ผ่านเกณฑ์ต้องแนบ Action Plan ก่อนส่งให้ผู้ตรวจ</span>
+        </div>
+        <div class="fc-desc-criteria l3">
+          <strong data-i18n="fc-desc-l3">ลำดับชั้นที่ 3</strong>
+          <span data-i18n="fc-desc-l3-text">รายงานถูกส่งให้ผู้ตรวจรายงานพิจารณา หากอนุมัติระบบจะคำนวณผล หากปฏิเสธจะส่งกลับให้พนักงานแก้ไข</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 7: Summary Steps (Flowchart) -->
+  <section id="summary-steps">
+    <div class="container">
+      <h2 class="section-title reveal" data-i18n="sum-steps-title">ขั้นตอนการดูผลสรุปรายงาน</h2>
+    </div>
+
+    <div class="fc-section7-wrap">
+      <div class="fc-section7-svg">
+        <svg class="fc-canvas reveal" viewBox="0 0 800 720" xmlns="http://www.w3.org/2000/svg"
+             style="width:760px;max-width:100%;height:auto;display:block;font-family:'Sarabun',sans-serif;">
+          <defs>
+            <linearGradient id="fcDiamond2" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#f472b6"/><stop offset="1" stop-color="#f9a8d4"/>
+            </linearGradient>
+            <linearGradient id="fcIO2" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#fbcfe8"/><stop offset="1" stop-color="#fce7f3"/>
+            </linearGradient>
+            <filter id="fcShadow2" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#831843" flood-opacity="0.18"/>
+            </filter>
+          </defs>
+
+          <!-- Flow arrows (navy/pink) -->
+          <g stroke="rgba(131,24,67,0.72)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="400" y1="62"  x2="400" y2="108" marker-end="url(#ah-navy)"/>
+            <line x1="400" y1="174" x2="400" y2="208" marker-end="url(#ah-navy)"/>
+            <path d="M 270 280 H 160 V 436" marker-end="url(#ah-navy)"/>
+            <path d="M 530 280 H 640 V 436" marker-end="url(#ah-navy)"/>
+            <path d="M 160 502 V 620 H 338" marker-end="url(#ah-navy)"/>
+            <path d="M 640 502 V 620 H 462" marker-end="url(#ah-navy)"/>
+          </g>
+
+          <!-- Branch labels -->
+          <g font-size="12" font-weight="600" fill="#64748b">
+            <text x="220" y="270" text-anchor="middle" data-i18n="sum-steps-branch-l">รายบุคคล</text>
+            <text x="580" y="270" text-anchor="middle" data-i18n="sum-steps-branch-r">ภาพรวมแผนก</text>
+          </g>
+
+          <!-- N1: เริ่มต้น (oval) -->
+          <ellipse cx="400" cy="40" rx="60" ry="22" fill="#ffffff" stroke="rgba(131,24,67,0.22)" stroke-width="1.5" filter="url(#fcShadow2)"/>
+          <text x="400" y="40" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="600" fill="#831843" data-i18n="fc-start">เริ่มต้น</text>
+
+          <!-- N2: ระบบคำนวณผล (rectangle / process) -->
+          <rect x="320" y="110" width="160" height="64" rx="8" fill="#ffffff" stroke="rgba(131,24,67,0.22)" stroke-width="1.5" filter="url(#fcShadow2)"/>
+          <text x="400" y="142" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="600" fill="#831843" data-i18n="sys-calc">ระบบคำนวณผล</text>
+
+          <!-- N3: เลือกดูข้อมูล (diamond / decision) -->
+          <polygon points="400,210 530,280 400,350 270,280" fill="url(#fcDiamond2)" stroke="rgba(244,114,182,0.5)" stroke-width="1.5" filter="url(#fcShadow2)"/>
+          <text x="400" y="270" text-anchor="middle" font-size="13" font-weight="600" fill="#831843" data-i18n="sum-steps-choose-l1">ผู้ใช้งาน</text>
+          <text x="400" y="290" text-anchor="middle" font-size="13" font-weight="600" fill="#831843" data-i18n="sum-steps-choose-l2">เลือกดูข้อมูล</text>
+
+          <!-- N4: สรุปรายงาน (parallelogram / display) -->
+          <polygon points="60,438 260,438 240,502 40,502" fill="url(#fcIO2)" stroke="rgba(244,114,182,0.5)" stroke-width="1.5" filter="url(#fcShadow2)"/>
+          <text x="150" y="470" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="600" fill="#831843" data-i18n="sum-steps-report">สรุปรายงาน</text>
+
+          <!-- N5: สรุปภาพรวมคะแนน (parallelogram / display) -->
+          <polygon points="540,438 760,438 740,502 520,502" fill="url(#fcIO2)" stroke="rgba(244,114,182,0.5)" stroke-width="1.5" filter="url(#fcShadow2)"/>
+          <text x="640" y="470" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="600" fill="#831843" data-i18n="sum-steps-overview">สรุปภาพรวมคะแนน</text>
+
+          <!-- N6: สิ้นสุด (oval) -->
+          <ellipse cx="400" cy="620" rx="62" ry="22" fill="#ffffff" stroke="rgba(131,24,67,0.22)" stroke-width="1.5" filter="url(#fcShadow2)"/>
+          <text x="400" y="620" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="600" fill="#831843" data-i18n="fc-end">สิ้นสุด</text>
+        </svg>
+      </div>
+
+      <div class="fc-side-desc">
+        <div class="fc-side-desc-block">
+          <strong data-i18n="sum-steps-report">สรุปรายงาน</strong>
+          <span data-i18n="sum-steps-report-desc">ดูคะแนนรายเดือนและค่าเฉลี่ยผลลัพธ์ KPI รายบุคคล</span>
+        </div>
+        <div class="fc-side-desc-block">
+          <strong data-i18n="sum-steps-overview">สรุปภาพรวมคะแนน</strong>
+          <span data-i18n="sum-steps-overview-desc">ตรวจสอบภาพรวมคะแนนของแผนกพร้อมค่าเฉลี่ย OKR</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 8: Summary -->
+  <section id="summary">
+    <div class="container">
+      <h2 class="section-title reveal" data-i18n="summary-title">สรุป</h2>
+      <p class="summary-intro reveal" data-i18n="summary-intro">
+        ระบบ OKR-KPI ช่วยองค์กรกำหนดเป้าหมาย วัดผลการดำเนินงาน และติดตามความก้าวหน้าของพนักงานทุกระดับ ตั้งแต่ระดับองค์กรลงสู่แผนกและรายบุคคลอย่างเป็นระบบ
+      </p>
+
+      <div class="summary-grid">
+        <div class="summary-card reveal">
+          <span class="s-icon">01</span>
+          <p data-i18n-html="summary-c1"><strong>ภาพรวมระบบ</strong>ระบบ OKR-KPI เชื่อมโยงเป้าหมายองค์กรกับการทำงานของพนักงานผ่านการตั้งเป้า รายงาน และประเมินผลในวงรอบรายเดือนอย่างต่อเนื่อง</p>
+        </div>
+        <div class="summary-card reveal">
+          <span class="s-icon">02</span>
+          <p data-i18n-html="summary-c2"><strong>OKR-KPI System คืออะไร?</strong>อธิบายระบบที่ใช้กำหนดเป้าหมาย วัดผลการดำเนินงาน และติดตามความก้าวหน้าของพนักงานและแผนกให้สอดคล้องกับองค์กร</p>
+        </div>
+        <div class="summary-card reveal">
+          <span class="s-icon">03</span>
+          <p data-i18n-html="summary-c3"><strong>ขั้นตอนการกำหนดเป้าหมายตัวชี้วัด</strong>แสดงลำดับจากเป้าหมายระดับองค์กร ลงสู่แผนก หัวหน้างาน และพนักงาน เพื่อให้ทุกระดับทำงานเชื่อมโยงกัน</p>
+        </div>
+        <div class="summary-card reveal">
+          <span class="s-icon">04</span>
+          <p data-i18n-html="summary-c4"><strong>ขั้นตอนการทำงานเพิ่มรายงาน KPIs</strong>พนักงานเพิ่มรายงาน KPI รายเดือน ระบบแยกรายงานตามเดือน และแสดงผลผ่านเกณฑ์หรือไม่ผ่านเกณฑ์พร้อม Action Plan</p>
+        </div>
+        <div class="summary-card reveal">
+          <span class="s-icon">05</span>
+          <p data-i18n-html="summary-c5"><strong>การตรวจรายงานเข้าระบบ</strong>รายงานถูกส่งให้ผู้ตรวจรายงานพิจารณา หากอนุมัติระบบจะคำนวณผล หากปฏิเสธจะส่งกลับให้พนักงานแก้ไข</p>
+        </div>
+        <div class="summary-card reveal">
+          <span class="s-icon">06</span>
+          <p data-i18n-html="summary-c6"><strong>ขั้นตอนการดูผลสรุปรายงาน</strong>ผู้ใช้งานดูคะแนนรายเดือน ค่าเฉลี่ย KPI รายบุคคล และภาพรวมคะแนนของแผนกจากผลลัพธ์ OKR ที่ระบบคำนวณไว้</p>
+        </div>
+      </div>
+
+      <p class="footer">OKR-KPI System &copy; 2025</p>
+    </div>
+  </section>
+
+  <script>
+    'use strict';
+
+    /* Progress bar */
+    const progressBar = document.getElementById('progress-bar');
+    function updateProgress() {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const docH = document.documentElement.scrollHeight - window.innerHeight;
+      progressBar.style.width = (docH > 0 ? (scrollTop / docH) * 100 : 0) + '%';
+    }
+
+    /* General reveal observer — bidirectional (fades in on scroll down, out on scroll up) */
+    const revealObs = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) e.target.classList.add('visible');
+        else e.target.classList.remove('visible');
+      });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal, .reveal-left, .reveal-scale, .fc-side-desc-block, .fc-desc-criteria').forEach((el) => revealObs.observe(el));
+
+    /* Hero: show immediately */
+    document.querySelectorAll('#hero .reveal').forEach((el) => {
+      setTimeout(() => el.classList.add('visible'), 100);
+    });
+
+    /* Workflow sticky-scroll reveal */
+    const workflowOuter = document.getElementById('workflowOuter');
+    const flowItems  = document.querySelectorAll('#workflow .flow-item');
+    const flowArrows = document.querySelectorAll('#workflow .flow-arrow-item');
+    const STEPS = flowItems.length;
+
+    function updateWorkflow() {
+      if (!workflowOuter) return;
+      const rect   = workflowOuter.getBoundingClientRect();
+      const outerH = workflowOuter.offsetHeight;
+      const viewH  = window.innerHeight;
+      const scrollable = outerH - viewH;
+      if (scrollable <= 0) {
+        /* section shorter than viewport — show all */
+        flowItems.forEach((el) => el.classList.add('visible'));
+        flowArrows.forEach((el) => el.classList.add('visible'));
+        return;
+      }
+      const progress = -rect.top / scrollable;
+
+      flowItems.forEach((item, i) => {
+        /* step 0 triggers at progress 0, rest at 1/N, 2/N, 3/N */
+        const trigger = i === 0 ? 0 : i / STEPS;
+        if (progress >= trigger) {
+          item.classList.add('visible');
+          if (flowArrows[i]) flowArrows[i].classList.add('visible');
+        } else {
+          item.classList.remove('visible');
+          if (flowArrows[i]) flowArrows[i].classList.remove('visible');
+        }
+      });
+    }
+
+    function updateReview() { /* legacy review removed — kept noop for compatibility */ }
+
+    /* Active nav */
+    const navLinks = document.querySelectorAll('nav#navbar a[data-section]');
+    const navObs = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          navLinks.forEach((a) => a.classList.remove('active'));
+          const match = document.querySelector('nav#navbar a[href="#' + e.target.id + '"]');
+          if (match) match.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-50% 0px -45% 0px' });
+    document.querySelectorAll('section[id]').forEach((s) => navObs.observe(s));
+
+    /* Section 5 reporting: bidirectional stagger reveal */
+    (function () {
+      const sec = document.getElementById('reporting');
+      if (!sec || !sec.querySelector('.chart-item')) return;
+      const items  = sec.querySelectorAll('.chart-item');
+      const arrows = sec.querySelectorAll('.chart-arrow-item');
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const all = [];
+            items.forEach(el  => all.push({ el, idx: parseInt(el.dataset.chart || 0) * 2 }));
+            arrows.forEach(el => all.push({ el, idx: parseInt(el.dataset.chart || 0) * 2 + 1 }));
+            all.sort((a, b) => a.idx - b.idx);
+            all.forEach(({ el }, i) => setTimeout(() => el.classList.add('visible'), i * 140));
+          } else {
+            items.forEach(el => el.classList.remove('visible'));
+            arrows.forEach(el => el.classList.remove('visible'));
+          }
+        });
+      }, { threshold: 0.08 });
+      obs.observe(sec);
+    })();
+
+    /* Section 6 & 7 SVG flowcharts: bidirectional (no extra logic needed — handled by general .reveal observer above) */
+
+    window.addEventListener('scroll', updateProgress, { passive: true });
+    window.addEventListener('scroll', updateWorkflow,  { passive: true });
+    window.addEventListener('scroll', updateReview,  { passive: true });
+    updateProgress();
+    updateWorkflow();
+    updateReview();
+
+    /* ── i18n system ── */
+    const i18n = {
+      th: {
+        'nav-agenda': 'วาระ', 'nav-overview': 'ภาพรวม', 'nav-target': 'เป้าหมาย',
+        'nav-reporting': 'รายงาน', 'nav-criteria': 'ตรวจรายงาน',
+        'nav-sum-steps': 'สรุปรายงาน', 'nav-summary': 'สรุป',
+        'hero-subtitle': 'กำหนดเป้าหมายและตัวชี้วัด',
+        'agenda-title': 'หัวข้อการนำเสนอระบบ OKR-KPI',
+        'th-topic': 'หัวข้อ', 'th-detail': 'รายละเอียด',
+        'row1-topic': 'กำหนดเป้าหมายและตัวชี้วัด',
+        'row1-d1': 'การใช้งานในส่วนของ DGM, GM',
+        'row1-d2': 'การใช้งานในส่วนของ Manager',
+        'row2-topic': 'การเพิ่มรายงาน KPIs',
+        'row2-d1': 'การใช้งานในส่วนของ Staff, Engineer, Senior Engineer, Supervisor',
+        'row2-d2': 'การประมวลผลหลังจาก Staff and above position ส่ง Submit',
+        'row2-d3': 'กรณีที่ทำไม่ได้ตาม Target ต้องแนบเอกสาร Action Plan',
+        'row3-topic': 'การตรวจ KPIs', 'row3-d1': 'Manager ตรวจ KPIs ของทีมตนเอง',
+        'row4-topic': 'การดูสรุปรายงาน', 'row4-d1': 'สรุปรายงาน', 'row4-d2': 'สรุปภาพรวมคะแนน',
+        'overview-title': 'OKR-KPI System คืออะไร?',
+        'overview-text': 'ระบบ OKR-KPI คือระบบที่ใช้กำหนดเป้าหมาย วัดผลการดำเนินงาน และติดตามความก้าวหน้า ของพนักงานและแผนก เพื่อให้การทำงานสอดคล้องกับเป้าหมายขององค์กร',
+        'level-1': 'ลำดับชั้นที่ 1', 'level-2': 'ลำดับชั้นที่ 2',
+        'level-3': 'ลำดับชั้นที่ 3', 'level-4': 'ลำดับชั้นที่ 4',
+        'workflow-title': 'ขั้นตอนการกำหนดเป้าหมายตัวชี้วัด', 'workflow-subtitle': 'ตัวอย่าง :',
+        'pyr-card-l1': 'บริษัทที่ได้รับรางวัล<br /><small style="font-weight:400;font-size:0.8rem;">ผู้จัดหาชั้นนำ Ford &amp; AAT / 5S / Zero PPM</small>',
+        'pyr-card-l2a': 'อัตราการสำเร็จ OJT<br />(100%)',
+        'pyr-card-l2b': 'ความแม่นยำ Skills Matrix<br />(100%)',
+        'pyr-card-l3a': 'หากพนักงานยังสอบ OJT ไม่ผ่าน<br />HR ไม่อนุญาตให้เข้าพื้นที่ไลน์ผลิต',
+        'pyr-card-l3b': 'ต้องมี Trainer / Buddy<br />ชาวไทยและพม่า พร้อมเอกสาร OJT',
+        'pyr-ghost-l3': 'เป้าหมายอื่นๆ',
+        'pyr-card-l4a': 'พนักงาน<br />คนที่ 1', 'pyr-card-l4b': 'พนักงาน<br />คนที่ 2', 'pyr-card-l4c': 'พนักงาน<br />คนที่ 3',
+        'pyr-ghost-l4t': 'พนักงานอื่นๆ<br />(ภายใต้สังกัด)', 'pyr-ghost-l4s': 'พนักงานอื่นๆ<br />(ภายใต้สังกัด)',
+        'pyr-desc-l1': '<strong>ลำดับชั้นที่ 1</strong>กำหนดเป้าหมายองค์กรให้ชัดเจน เพื่อเป็นทิศทางหลักของบริษัท (ผู้ดูแลระบบกำหนด)',
+        'pyr-desc-l2': '<strong>ลำดับชั้นที่ 2</strong>ถ่ายทอดเป้าหมายองค์กรจากลำดับชั้นที่ 1 ให้เป็นเป้าหมายระดับฝ่ายหรือสายงาน (ผู้ดูแลระบบกำหนด)',
+        'pyr-desc-l3': '<strong>ลำดับชั้นที่ 3</strong>กำหนดเป้าหมายระดับแผนกให้สอดคล้องกับลำดับชั้นที่ 1 และ 2 พร้อมสื่อสารให้พนักงานในสังกัดรับทราบ (ผู้ใช้งานกำหนดเป้าหมายด้วยตัวเอง)',
+        'pyr-desc-l4': '<strong>ลำดับชั้นที่ 4</strong>บันทึกรายงาน KPI และผลคะแนนรายเดือนให้เชื่อมโยงกับเป้าหมายองค์กร (ผู้ใช้งานเพิ่มรายงาน KPI ด้วยตัวเอง)',
+        'reporting-title': 'ขั้นตอนการทำงานเพิ่มรายงาน KPIs',
+        'rep-l1-box': 'บริษัทที่ได้รับรางวัล<br /><small style="font-weight:400;font-size:0.8rem;">ผู้จัดหาชั้นนำ Ford &amp; AAT / 5S / Zero PPM</small>',
+        'rep-l2-box': 'อัตราการสำเร็จ OJT<br />(100%)',
+        'report-ojt-box': 'หากพนักงานยังสอบ OJT ไม่ผ่าน HR จะไม่อนุญาตให้เข้าพื้นที่ไลน์ผลิตเด็ดขาด',
+        'emp-box': 'พนักงาน',
+        'report-1': 'KPI หัวข้อที่ 1', 'report-2': 'KPI หัวข้อที่ 2',
+        'month-1': 'มิถุนายน', 'month-2': 'กรกฎาคม', 'month-3': 'สิงหาคม', 'month-other': 'อื่นๆ', 'month-other-1': 'อื่นๆ',
+        'result-pass': 'ผ่านเกณฑ์', 'result-fail': 'ไม่ผ่านเกณฑ์<br /><strong>*แนบ Action Plan</strong>',
+        'chart-desc-rep-l12': '<strong>ลำดับชั้นที่ 1 และลำดับชั้นที่ 2</strong>พนักงานตรวจสอบเป้าหมายตัวชี้วัดของลำดับชั้นที่ 1 และ<span style="white-space:nowrap;">ลำดับชั้นที่ 2</span> หลังจากนั้นพิจารณา<span style="white-space:nowrap;">ความสอดคล้อง</span>',
+        'chart-desc-rep-l3': '<strong>ลำดับชั้นที่ 3</strong>พนักงานตรวจสอบเป้าหมายตัวชี้วัดของลำดับชั้นที่ 3 และพิจารณาความสอดคล้อง',
+        'chart-desc-rep-l4': '<strong>ลำดับชั้นที่ 4</strong>พนักงานเพิ่มรายงาน KPI และผลคะแนนรายเดือน',
+        'criteria-title': 'ขั้นตอนการตรวจรายงาน',
+        'fc-start': 'เริ่มต้น', 'fc-end': 'สิ้นสุด',
+        'fc-input-l1': 'พนักงานกรอก KPI', 'fc-input-l2': 'หัวข้อที่ 1 ของแต่ละเดือน',
+        'fc-decide-l1': 'พนักงานพิจารณา', 'fc-decide-l2': 'เป้าหมาย KPI',
+        'fc-action': 'แนบ Action Plan',
+        'fc-review': 'ตรวจรายงาน',
+        'fc-calc': 'คำนวณผลคะแนน',
+        'fc-display': 'แสดงผลลัพธ์',
+        'fc-fail': 'ไม่ผ่านเกณฑ์', 'fc-pass': 'ผ่านเกณฑ์',
+        'fc-reject': 'ปฏิเสธ', 'fc-approve': 'อนุมัติ',
+        'fc-desc-l4': 'ลำดับชั้นที่ 4',
+        'fc-desc-l4-text': 'พนักงานกรอกรายงาน KPI ผ่านระบบ หากไม่ผ่านเกณฑ์ต้องแนบ Action Plan ก่อนส่งให้ผู้ตรวจ',
+        'fc-desc-l3': 'ลำดับชั้นที่ 3',
+        'fc-desc-l3-text': 'รายงานถูกส่งให้ผู้ตรวจรายงานพิจารณา หากอนุมัติระบบจะคำนวณผล หากปฏิเสธจะส่งกลับให้พนักงานแก้ไข',
+        'sum-steps-title': 'ขั้นตอนการดูผลสรุปรายงาน',
+        'sum-steps-report': 'สรุปรายงาน', 'sum-steps-overview': 'สรุปภาพรวมคะแนน',
+        'sum-steps-choose-l1': 'ผู้ใช้งาน', 'sum-steps-choose-l2': 'เลือกดูข้อมูล',
+        'sum-steps-branch-l': 'รายบุคคล', 'sum-steps-branch-r': 'ภาพรวมแผนก',
+        'sum-steps-report-desc': 'ดูคะแนนรายเดือนและค่าเฉลี่ยผลลัพธ์ KPI รายบุคคล',
+        'sum-steps-overview-desc': 'ตรวจสอบภาพรวมคะแนนของแผนกพร้อมค่าเฉลี่ย OKR',
+        'sys-calc': 'ระบบคำนวณผล',
+        'summary-title': 'สรุป',
+        'summary-intro': 'ระบบ OKR-KPI ช่วยองค์กรกำหนดเป้าหมาย วัดผลการดำเนินงาน และติดตามความก้าวหน้าของพนักงานทุกระดับ ตั้งแต่ระดับองค์กรลงสู่แผนกและรายบุคคลอย่างเป็นระบบ',
+        'summary-c1': '<strong>ภาพรวมระบบ</strong>ระบบ OKR-KPI เชื่อมโยงเป้าหมายองค์กรกับการทำงานของพนักงานผ่านการตั้งเป้า รายงาน และประเมินผลในวงรอบรายเดือนอย่างต่อเนื่อง',
+        'summary-c2': '<strong>OKR-KPI System คืออะไร?</strong>อธิบายระบบที่ใช้กำหนดเป้าหมาย วัดผลการดำเนินงาน และติดตามความก้าวหน้าของพนักงานและแผนกให้สอดคล้องกับองค์กร',
+        'summary-c3': '<strong>ขั้นตอนการกำหนดเป้าหมายตัวชี้วัด</strong>แสดงลำดับจากเป้าหมายระดับองค์กร ลงสู่แผนก หัวหน้างาน และพนักงาน เพื่อให้ทุกระดับทำงานเชื่อมโยงกัน',
+        'summary-c4': '<strong>ขั้นตอนการทำงานเพิ่มรายงาน KPIs</strong>พนักงานเพิ่มรายงาน KPI รายเดือน ระบบแยกรายงานตามเดือน และแสดงผลผ่านเกณฑ์หรือไม่ผ่านเกณฑ์พร้อม Action Plan',
+        'summary-c5': '<strong>การตรวจรายงานเข้าระบบ</strong>รายงานถูกส่งให้ผู้ตรวจรายงานพิจารณา หากอนุมัติระบบจะคำนวณผล หากปฏิเสธจะส่งกลับให้พนักงานแก้ไข',
+        'summary-c6': '<strong>ขั้นตอนการดูผลสรุปรายงาน</strong>ผู้ใช้งานดูคะแนนรายเดือน ค่าเฉลี่ย KPI รายบุคคล และภาพรวมคะแนนของแผนกจากผลลัพธ์ OKR ที่ระบบคำนวณไว้'
+      },
+      en: {
+        'nav-agenda': 'Agenda', 'nav-overview': 'Overview', 'nav-target': 'Target',
+        'nav-reporting': 'Reporting', 'nav-criteria': 'Report Review',
+        'nav-sum-steps': 'Report Summary', 'nav-summary': 'Summary',
+        'hero-subtitle': 'Set Goals and Key Performance Indicators',
+        'agenda-title': 'OKR-KPI System Walkthrough',
+        'th-topic': 'Topic', 'th-detail': 'Details',
+        'row1-topic': 'Set Goals and Indicators',
+        'row1-d1': 'Usage for DGM, GM roles',
+        'row1-d2': 'Usage for Manager role',
+        'row2-topic': 'Add KPI Reports',
+        'row2-d1': 'Usage for Staff, Engineer, Senior Engineer, Supervisor',
+        'row2-d2': 'Processing after Staff and above positions submit',
+        'row2-d3': 'When not meeting Target, an Action Plan document must be attached',
+        'row3-topic': 'KPI Review', 'row3-d1': "Manager reviews the team's KPIs",
+        'row4-topic': 'View Report Summary', 'row4-d1': 'Report Summary', 'row4-d2': 'Overall Score Summary',
+        'overview-title': 'What is OKR-KPI System?',
+        'overview-text': "The OKR-KPI system is a platform for setting goals, measuring performance, and tracking the progress of employees and departments to align with the organization's objectives.",
+        'level-1': 'Level 1', 'level-2': 'Level 2', 'level-3': 'Level 3', 'level-4': 'Level 4',
+        'workflow-title': 'KPI Goal Setting Process', 'workflow-subtitle': 'Example :',
+        'pyr-card-l1': 'Award Company<br /><small style="font-weight:400;font-size:0.8rem;">Top supplier Ford &amp; AAT / 5S / Zero PPM</small>',
+        'pyr-card-l2a': 'OJT Completion Rate<br />(100%)',
+        'pyr-card-l2b': 'Skills Matrix Accuracy<br />(100%)',
+        'pyr-card-l3a': 'If employee has not passed OJT,<br />HR does not allow entry to the production line.',
+        'pyr-card-l3b': 'Must have Thai &amp; Myanmar<br />Trainer / Buddy with OJT document.',
+        'pyr-ghost-l3': 'Other Targets',
+        'pyr-card-l4a': 'Employee<br />No.1', 'pyr-card-l4b': 'Employee<br />No.2', 'pyr-card-l4c': 'Employee<br />No.3',
+        'pyr-ghost-l4t': 'Other Employees<br />(under supervision)', 'pyr-ghost-l4s': 'Other Employees<br />(under supervision)',
+        'pyr-desc-l1': '<strong>Level 1</strong>Define clear organizational goals to set the company\'s main direction. (Set by administrator)',
+        'pyr-desc-l2': '<strong>Level 2</strong>Cascade organizational goals from Level 1 into department or division targets. (Set by administrator)',
+        'pyr-desc-l3': '<strong>Level 3</strong>Set department-level goals aligned with Levels 1 and 2, and communicate them to all staff. (Users set their own goals)',
+        'pyr-desc-l4': '<strong>Level 4</strong>Record monthly KPI reports and scores linked to organizational goals. (Users add KPI reports themselves)',
+        'reporting-title': 'Add KPI Reports Process',
+        'rep-l1-box': 'Award Company<br /><small style="font-weight:400;font-size:0.8rem;">Top supplier Ford &amp; AAT / 5S / Zero PPM</small>',
+        'rep-l2-box': 'OJT Completion Rate<br />(100%)',
+        'report-ojt-box': 'If employee has not passed OJT, HR will absolutely not allow entry to the production line area.',
+        'emp-box': 'Employee',
+        'report-1': 'KPI Topic 1', 'report-2': 'KPI Topic 2',
+        'month-1': 'June', 'month-2': 'July', 'month-3': 'August', 'month-other': 'Others', 'month-other-1': 'Others',
+        'result-pass': 'Pass', 'result-fail': 'Fail<br /><strong>*Attach Action Plan</strong>',
+        'chart-desc-rep-l12': '<strong>Level 1 and Level 2</strong>Employees review the KPI targets for Levels 1 and 2, then assess their alignment.',
+        'chart-desc-rep-l3': '<strong>Level 3</strong>Employees review the KPI targets for Level 3 and assess their alignment.',
+        'chart-desc-rep-l4': '<strong>Level 4</strong>Employees add monthly KPI reports and scores.',
+        'criteria-title': 'Report Review Steps',
+        'fc-start': 'Start', 'fc-end': 'End',
+        'fc-input-l1': 'Employee fills KPI', 'fc-input-l2': 'Topic 1 (monthly)',
+        'fc-decide-l1': 'Employee reviews', 'fc-decide-l2': 'KPI Target',
+        'fc-action': 'Attach Action Plan',
+        'fc-review': 'Review Report',
+        'fc-calc': 'Calculate Score',
+        'fc-display': 'Display Result',
+        'fc-fail': 'Fail', 'fc-pass': 'Pass',
+        'fc-reject': 'Reject', 'fc-approve': 'Approve',
+        'fc-desc-l4': 'Level 4',
+        'fc-desc-l4-text': 'Employees record KPI reports; if not meeting the criteria, an Action Plan must be attached before submission.',
+        'fc-desc-l3': 'Level 3',
+        'fc-desc-l3-text': 'Reports are sent to the reviewer. If approved, the system calculates results; if rejected, the report is returned for correction.',
+        'sum-steps-title': 'View Report Summary Process',
+        'sum-steps-report': 'Report Summary', 'sum-steps-overview': 'Overall Score Summary',
+        'sum-steps-choose-l1': 'User', 'sum-steps-choose-l2': 'chooses view',
+        'sum-steps-branch-l': 'Individual', 'sum-steps-branch-r': 'Department',
+        'sum-steps-report-desc': 'View monthly scores and individual KPI averages.',
+        'sum-steps-overview-desc': 'Check department-wide score summary with OKR averages.',
+        'sys-calc': 'System Calculates',
+        'summary-title': 'Summary',
+        'summary-intro': 'The OKR-KPI system helps organizations set goals, measure performance, and track employee progress at every level — from organizational down to department and individual.',
+        'summary-c1': '<strong>System Overview</strong>The OKR-KPI system links organizational goals to employee work through monthly cycles of target setting, reporting, and evaluation.',
+        'summary-c2': '<strong>What is OKR-KPI System?</strong>A system for setting goals, measuring performance, and tracking employee and department progress in alignment with the organization.',
+        'summary-c3': '<strong>KPI Goal Setting Process</strong>Goals cascade from organizational level down to departments, supervisors, and employees — ensuring alignment at every level.',
+        'summary-c4': '<strong>Add KPI Reports Process</strong>Employees submit monthly KPI reports. The system separates by month and shows pass/fail status with an Action Plan.',
+        'summary-c5': '<strong>Report Review Process</strong>Reports are sent to the reviewer. If approved, the system calculates results; if rejected, the report is returned for correction.',
+        'summary-c6': '<strong>View Report Summary Process</strong>Users view monthly scores, individual KPI averages, and department-wide score summaries from OKR results calculated by the system.'
+      }
+    };
+
+    function applyLang(lang) {
+      document.querySelectorAll('[data-i18n]').forEach((el) => {
+        const v = i18n[lang][el.dataset.i18n];
+        if (v !== undefined) el.textContent = v;
+      });
+      document.querySelectorAll('[data-i18n-html]').forEach((el) => {
+        const v = i18n[lang][el.dataset.i18nHtml];
+        if (v !== undefined) el.innerHTML = v;
+      });
+      document.documentElement.lang = lang;
+      const btn = document.getElementById('lang-btn');
+      if (btn) btn.textContent = lang === 'th' ? 'EN' : 'TH';
+      localStorage.setItem('okr-lang', lang);
+    }
+
+    const langBtn = document.getElementById('lang-btn');
+    langBtn.addEventListener('click', () => {
+      const cur = localStorage.getItem('okr-lang') || 'th';
+      applyLang(cur === 'th' ? 'en' : 'th');
+    });
+    applyLang(localStorage.getItem('okr-lang') || 'th');
+  </script>
+
+</body>
+</html>
